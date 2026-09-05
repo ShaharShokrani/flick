@@ -29,6 +29,8 @@ type EditCardInput = {
 let state: Flashcard[] | null = null;
 const listeners = new Set<() => void>();
 let started = false;
+let cloudSync = false;
+let importedForUser: string | null = null;
 
 function emit() {
   for (const listener of listeners) {
@@ -128,21 +130,63 @@ async function bootstrap() {
   }
 }
 
+function shouldUseRemoteApi() {
+  return cloudSync || canUseLocalApi();
+}
+
+async function importLocalDeck(userId: string) {
+  if (importedForUser === userId) {
+    return;
+  }
+  const local = loadCards().filter((card) => !card.id.startsWith("sample-"));
+  if (local.length > 0) {
+    await fetch("/api/cards", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ import: true, cards: local }),
+    });
+  }
+  importedForUser = userId;
+}
+
+export async function enableCloudSync(userId: string | null) {
+  const next = Boolean(userId);
+  if (next === cloudSync && (!next || importedForUser === userId)) {
+    return;
+  }
+  cloudSync = next;
+  if (!next) {
+    importedForUser = null;
+    if (!canUseLocalApi()) {
+      replace(loadCards());
+    }
+    return;
+  }
+  if (userId) {
+    await importLocalDeck(userId);
+  }
+  await bootstrap();
+}
+
 function start() {
   if (started || typeof window === "undefined") {
     return;
   }
   started = true;
-  if (!canUseLocalApi()) {
+  if (!shouldUseRemoteApi()) {
     replace(loadCards());
-    return;
+  } else {
+    void bootstrap();
   }
-  void bootstrap();
   window.setInterval(() => {
-    void refreshCards();
+    if (shouldUseRemoteApi()) {
+      void refreshCards();
+    }
   }, 2000);
   window.addEventListener("focus", () => {
-    void refreshCards();
+    if (shouldUseRemoteApi()) {
+      void refreshCards();
+    }
   });
 }
 
@@ -167,7 +211,7 @@ export function getServerSnapshot() {
 }
 
 export async function addCard(input: AddCardInput) {
-  if (!canUseLocalApi()) {
+  if (!shouldUseRemoteApi()) {
     const fallback = upsertCard(getClientSnapshot(), input);
     replace(fallback.cards);
     return fallback.card;
@@ -193,7 +237,7 @@ export async function addCard(input: AddCardInput) {
 }
 
 export async function updateCard(input: EditCardInput) {
-  if (!canUseLocalApi()) {
+  if (!shouldUseRemoteApi()) {
     const result = editCard(getClientSnapshot(), input);
     if ("error" in result) {
       throw new Error(
@@ -235,7 +279,7 @@ export async function updateCard(input: EditCardInput) {
 }
 
 export async function deleteCard(id: string) {
-  if (!canUseLocalApi()) {
+  if (!shouldUseRemoteApi()) {
     replace(getClientSnapshot().filter((card) => card.id !== id));
     return;
   }
@@ -253,7 +297,7 @@ export async function deleteCard(id: string) {
 }
 
 export async function review(id: string, remembered: boolean) {
-  if (!canUseLocalApi()) {
+  if (!shouldUseRemoteApi()) {
     replace(
       getClientSnapshot().map((card) =>
         card.id === id ? reviewCard(card, remembered) : card
@@ -285,7 +329,7 @@ export async function markKnown(id: string) {
 }
 
 export async function resetKnown() {
-  if (!canUseLocalApi()) {
+  if (!shouldUseRemoteApi()) {
     replace(getClientSnapshot().map((card) => resetSchedule(card)));
     return;
   }

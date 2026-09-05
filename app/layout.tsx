@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 
+import { AuthSync } from "@/components/auth-sync";
 import { PwaRegister } from "@/components/pwa-register";
 import { DeckProvider } from "@/lib/deck-context";
 
@@ -52,7 +53,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <PwaRegister />
-        <DeckProvider>{children}</DeckProvider>
+        <DeckProvider>
+          <AuthSync />
+          {children}
+        </DeckProvider>
       </body>
     </html>
   );

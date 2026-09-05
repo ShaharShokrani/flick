@@ -8,9 +8,16 @@ copies it into the generated snapshot.
 A browser flashcard app. The user adds a word, the English translation,
 and an optional example, then reviews unread cards.
 
-There is no account. On localhost, the deck is `data/cards.json` via
-`/api/cards` so agents can upload words. On a public host (Vercel), the
-phone browser keeps the deck in `localStorage` only.
+On localhost without sign-in, the deck is `data/cards.json` via
+`/api/cards` so agents can upload words. On a public host without
+sign-in, the phone browser keeps the deck in `localStorage` only.
+
+Signed-in users (Google, email, or guest) store cards in the shared
+Postgres database, keyed by user. The same account on computer and
+phone sees the same words. Guest accounts get an 8-character code
+(`XXXX-XXXX`) to open that deck on another device. Local `npm run dev`
+can use PGlite in `data/pglite` when `DATABASE_URL` is unset. Vercel
+needs `DATABASE_URL` and `BETTER_AUTH_SECRET` for sign-in to work.
 
 ## Learning rules
 
@@ -46,8 +53,9 @@ port `43147`.
 - `/` — deck stats and start learning
 - `/words` — add, edit, and delete cards, with a knowledge %
 - `/learn` — one-pass Yes/No session
-- `POST /api/cards` — agent or CLI upload of a word
-- `GET /api/cards?learned=1` — words the local user already knows
+- Sign in — Google (if configured), email + password, or guest code
+- `POST /api/cards` — agent or CLI upload of a word (localhost file, or the signed-in user)
+- `GET /api/cards?learned=1` — words the current deck already knows
 
 ## Agent upload
 
