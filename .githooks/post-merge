@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -e
+
+if [ "${SKIP_MEMORY}" = "1" ]; then
+  exit 0
+fi
+
+node scripts/update-memory.mjs
+node scripts/update-memory.mjs --check >/dev/null 2>&1 || {
+  echo "Codebase memory was refreshed after merge. Commit .cursor/memory/codebase.md if it changed."
+}

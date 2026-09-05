@@ -6,7 +6,10 @@
     "dev": "next dev --port 43147 --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start --port 43147 --hostname 0.0.0.0",
-    "lint": "eslint"
+    "lint": "eslint && npm run memory:check",
+    "memory:update": "node scripts/update-memory.mjs",
+    "memory:check": "node scripts/update-memory.mjs --check",
+    "prepare": "node scripts/install-hooks.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

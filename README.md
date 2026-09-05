@@ -28,3 +28,19 @@ npm start
 3. Choose Yes or No. The session ends when every remaining card has been answered.
 
 The first visit includes a few sample words so you can try the flow immediately.
+
+## Codebase memory
+
+Long-term memory for this git repo lives in `.cursor/memory/`.
+
+- `.cursor/memory/intent.md` — durable product facts. Edit this when behavior changes.
+- `.cursor/memory/codebase.md` — generated snapshot of routes, files, and exports. Do not edit.
+
+Keep it current:
+
+```bash
+npm run memory:update
+npm run memory:check
+```
+
+`npm install` points git at `.githooks/`. Every commit regenerates and stages the snapshot. Push refuses a stale snapshot. After a merge or branch checkout the snapshot is refreshed again. Set `SKIP_MEMORY=1` only if you must bypass a hook.
