@@ -13,10 +13,11 @@ import {
   deleteCard as deleteCardFromStore,
   getClientSnapshot,
   getServerSnapshot,
-  markKnown as markKnownInStore,
   resetKnown as resetKnownInStore,
+  review as reviewInStore,
   subscribe,
 } from "@/lib/deck-store";
+import { dueCards, formatNextReview, nextDueAt } from "@/lib/schedule";
 import type { Flashcard } from "@/lib/types";
 
 type AddCardInput = {
@@ -30,9 +31,12 @@ type DeckContextValue = {
   cards: Flashcard[];
   toLearn: Flashcard[];
   knownCount: number;
+  upcomingCount: number;
+  nextReviewLabel: string | null;
   addCard: (input: AddCardInput) => Promise<void>;
   deleteCard: (id: string) => Promise<void>;
   markKnown: (id: string) => Promise<void>;
+  markForgotten: (id: string) => Promise<void>;
   resetKnown: () => Promise<void>;
 };
 
@@ -46,11 +50,14 @@ export function DeckProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<DeckContextValue>(() => {
-    const toLearn = cards.filter((card) => !card.known);
+    const toLearn = dueCards(cards);
+    const nextAt = nextDueAt(cards);
     return {
       cards,
       toLearn,
-      knownCount: cards.length - toLearn.length,
+      knownCount: cards.filter((card) => card.known).length,
+      upcomingCount: cards.length - toLearn.length,
+      nextReviewLabel: nextAt ? formatNextReview(nextAt) : null,
       addCard: async (input) => {
         await addCardToStore(input);
       },
@@ -58,7 +65,10 @@ export function DeckProvider({ children }: { children: ReactNode }) {
         await deleteCardFromStore(id);
       },
       markKnown: async (id) => {
-        await markKnownInStore(id);
+        await reviewInStore(id, true);
+      },
+      markForgotten: async (id) => {
+        await reviewInStore(id, false);
       },
       resetKnown: async () => {
         await resetKnownInStore();

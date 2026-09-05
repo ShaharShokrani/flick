@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useDeck } from "@/lib/deck-context";
+import { formatDue, isDue } from "@/lib/schedule";
 import type { Flashcard } from "@/lib/types";
 
 export function CardList() {
@@ -33,7 +34,7 @@ export function CardList() {
   return (
     <>
       <ul className="grid gap-3">
-        {cards.map((card) => (
+        {sortByDue(cards).map((card) => (
           <li
             key={card.id}
             className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-foreground/8"
@@ -44,14 +45,14 @@ export function CardList() {
                   <p className="font-serif text-xl leading-tight tracking-tight">
                     {card.word}
                   </p>
-                  {card.known ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-800 ring-1 ring-emerald-200">
-                      <Check className="size-3" />
-                      Known
+                  {isDue(card) ? (
+                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-900 ring-1 ring-amber-200">
+                      Due today
                     </span>
                   ) : (
-                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-900 ring-1 ring-amber-200">
-                      To learn
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-800 ring-1 ring-emerald-200">
+                      <Check className="size-3" />
+                      {formatDue(card)}
                     </span>
                   )}
                 </div>
@@ -114,4 +115,15 @@ export function CardList() {
       </Dialog>
     </>
   );
+}
+
+function sortByDue(cards: Flashcard[]) {
+  return [...cards].sort((left, right) => {
+    const leftDue = isDue(left) ? 0 : 1;
+    const rightDue = isDue(right) ? 0 : 1;
+    if (leftDue !== rightDue) {
+      return leftDue - rightDue;
+    }
+    return (left.dueAt ?? 0) - (right.dueAt ?? 0);
+  });
 }

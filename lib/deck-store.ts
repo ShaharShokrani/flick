@@ -1,6 +1,7 @@
 "use client";
 
 import { upsertCard } from "@/lib/card-model";
+import { resetSchedule, reviewCard } from "@/lib/schedule";
 import {
   hasMigratedLocalDeck,
   loadCards,
@@ -53,7 +54,9 @@ function sameDeck(left: Flashcard[], right: Flashcard[]) {
       card.word === other.word &&
       card.translation === other.translation &&
       card.example === other.example &&
-      card.known === other.known
+      card.known === other.known &&
+      card.dueAt === other.dueAt &&
+      card.intervalDays === other.intervalDays
     );
   });
 }
@@ -186,11 +189,11 @@ export async function deleteCard(id: string) {
   replace(getClientSnapshot().filter((card) => card.id !== id));
 }
 
-export async function markKnown(id: string) {
+export async function review(id: string, remembered: boolean) {
   const response = await fetch("/api/cards", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id, known: true }),
+    body: JSON.stringify({ id, remembered }),
   });
   if (response.ok) {
     const data = (await response.json()) as { cards?: Flashcard[] };
@@ -201,16 +204,20 @@ export async function markKnown(id: string) {
   }
   replace(
     getClientSnapshot().map((card) =>
-      card.id === id ? { ...card, known: true } : card
+      card.id === id ? reviewCard(card, remembered) : card
     )
   );
+}
+
+export async function markKnown(id: string) {
+  return review(id, true);
 }
 
 export async function resetKnown() {
   const response = await fetch("/api/cards", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ resetKnown: true }),
+    body: JSON.stringify({ resetSchedule: true }),
   });
   if (response.ok) {
     const data = (await response.json()) as { cards?: Flashcard[] };
@@ -219,6 +226,6 @@ export async function resetKnown() {
       return;
     }
   }
-  replace(getClientSnapshot().map((card) => ({ ...card, known: false })));
+  replace(getClientSnapshot().map((card) => resetSchedule(card)));
 }
 

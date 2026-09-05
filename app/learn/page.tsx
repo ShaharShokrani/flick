@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, RotateCcw, X } from "lucide-react";
+import { ArrowLeft, Check, X } from "lucide-react";
 
 import { Flashcard, type PromptSide } from "@/components/flashcard";
 import { SiteHeader } from "@/components/site-header";
@@ -39,8 +39,7 @@ function dealReview(cards: FlashcardType[]): ReviewCard[] {
 
 export default function LearnPage() {
   const mounted = useHasMounted();
-  const { toLearn, markKnown } = useDeck();
-  const [session, setSession] = useState(0);
+  const { toLearn, markKnown, markForgotten, nextReviewLabel } = useDeck();
   const [activeSession, setActiveSession] = useState<number | null>(null);
   const [queue, setQueue] = useState<ReviewCard[] | null>(null);
   const [startingCount, setStartingCount] = useState(0);
@@ -48,8 +47,8 @@ export default function LearnPage() {
   const [knownThisSession, setKnownThisSession] = useState(0);
   const [skippedThisSession, setSkippedThisSession] = useState(0);
 
-  if (mounted && activeSession !== session) {
-    setActiveSession(session);
+  if (mounted && activeSession === null) {
+    setActiveSession(0);
     setQueue(dealReview(toLearn));
     setStartingCount(toLearn.length);
     setFlipped(false);
@@ -80,6 +79,7 @@ export default function LearnPage() {
     if (!current) {
       return;
     }
+    markForgotten(current.card.id);
     setSkippedThisSession((count) => count + 1);
     goNext(queue?.slice(1) ?? []);
   }
@@ -135,7 +135,7 @@ export default function LearnPage() {
             knownThisSession={knownThisSession}
             skippedThisSession={skippedThisSession}
             reviewed={reviewed}
-            onRestart={() => setSession((value) => value + 1)}
+            nextReviewLabel={nextReviewLabel}
           />
         ) : current ? (
           <div className="flex flex-1 flex-col gap-6">
@@ -181,7 +181,7 @@ export default function LearnPage() {
             </div>
             <p className="text-center text-sm text-muted-foreground">
               {flipped
-                ? "Yes marks it as known. No hides it for the rest of this session."
+                ? "Yes sees it again later. No brings it back tomorrow."
                 : "Flip the card first, then choose Yes or No."}
             </p>
           </div>
@@ -196,13 +196,13 @@ function SessionDone({
   knownThisSession,
   skippedThisSession,
   reviewed,
-  onRestart,
+  nextReviewLabel,
 }: {
   startingCount: number;
   knownThisSession: number;
   skippedThisSession: number;
   reviewed: number;
-  onRestart: () => void;
+  nextReviewLabel: string | null;
 }) {
   const empty = startingCount === 0;
 
@@ -217,14 +217,14 @@ function SessionDone({
       <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
         {empty
           ? "Add a word to your deck, then come back to flip through it."
-          : `You went through ${reviewed} ${reviewed === 1 ? "card" : "cards"}. Known words stay out of future sessions. Skipped words come back next time.`}
+          : `You went through ${reviewed} ${reviewed === 1 ? "card" : "cards"}. Yes waits longer next time. No comes back tomorrow.${nextReviewLabel ? ` Next review ${nextReviewLabel}.` : ""}`}
       </p>
 
       {!empty ? (
         <dl className="mx-auto mt-6 grid max-w-xs grid-cols-2 gap-2">
           <div className="rounded-xl bg-emerald-50 px-3 py-3">
             <dt className="text-[11px] tracking-wide text-emerald-800 uppercase">
-              Known
+              Later
             </dt>
             <dd className="mt-1 font-serif text-2xl text-emerald-950">
               {knownThisSession}
@@ -232,7 +232,7 @@ function SessionDone({
           </div>
           <div className="rounded-xl bg-rose-50 px-3 py-3">
             <dt className="text-[11px] tracking-wide text-rose-800 uppercase">
-              Skipped
+              Tomorrow
             </dt>
             <dd className="mt-1 font-serif text-2xl text-rose-950">
               {skippedThisSession}
@@ -246,12 +246,6 @@ function SessionDone({
           <ArrowLeft data-icon="inline-start" />
           Back to deck
         </Link>
-        {!empty && skippedThisSession > 0 ? (
-          <Button variant="ghost" className="h-10" onClick={onRestart}>
-            <RotateCcw data-icon="inline-start" />
-            Start again
-          </Button>
-        ) : null}
       </div>
     </section>
   );

@@ -97,21 +97,41 @@ function upsertLocal({ word, translation, example, known }) {
   const existing = cards.find(
     (card) => String(card.word).trim().toLocaleLowerCase() === key
   );
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(startOfDay);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const schedule = known
+    ? {
+        known: true,
+        dueAt: tomorrow.getTime(),
+        intervalDays: 1,
+        repetitions: 1,
+        ease: 2.5,
+      }
+    : {
+        known: false,
+        dueAt: startOfDay.getTime(),
+        intervalDays: 0,
+        repetitions: 0,
+        ease: 2.5,
+      };
   const card = existing
     ? {
         ...existing,
         word,
         translation,
         example: example || existing.example,
-        known: known || existing.known,
+        ...(known && !existing.known ? schedule : {}),
+        ...(!known && existing.known ? schedule : {}),
       }
     : {
         id: randomUUID(),
         word,
         translation,
         example,
-        known,
         createdAt: Date.now(),
+        ...schedule,
       };
 
   const next = existing

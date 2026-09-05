@@ -10,9 +10,16 @@ import { useDeck } from "@/lib/deck-context";
 import { cn } from "@/lib/utils";
 
 export function HomeView() {
-  const { cards, toLearn, knownCount, resetKnown } = useDeck();
+  const {
+    cards,
+    toLearn,
+    upcomingCount,
+    nextReviewLabel,
+    resetKnown,
+  } = useDeck();
   const canLearn = toLearn.length > 0;
-  const allKnown = cards.length > 0 && toLearn.length === 0;
+  const empty = cards.length === 0;
+  const doneForToday = !empty && !canLearn;
 
   return (
     <div className="grid gap-8">
@@ -24,15 +31,14 @@ export function HomeView() {
           See a word or the English. Say if you know it.
         </h1>
         <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-          Add words with an English translation and an example. Each card starts
-          from the word or the English at random. Yes keeps it as known. No
-          takes it out of this session.
+          Each day only shows cards that are due. Yes waits a little longer
+          next time. No brings the card back tomorrow.
         </p>
 
         <dl className="mt-5 grid grid-cols-3 gap-2 text-center">
+          <Stat label="Due today" value={toLearn.length} />
+          <Stat label="Later" value={upcomingCount} />
           <Stat label="Cards" value={cards.length} />
-          <Stat label="To learn" value={toLearn.length} />
-          <Stat label="Known" value={knownCount} />
         </dl>
 
         <div className="mt-5 flex flex-col gap-2 sm:flex-row">
@@ -47,31 +53,35 @@ export function HomeView() {
           ) : (
             <Button className="h-10 flex-1" disabled>
               <BookOpen data-icon="inline-start" />
-              {allKnown ? "Nothing left to learn" : "Add a word first"}
+              {empty ? "Add a word first" : "Nothing due today"}
             </Button>
           )}
           <AddCardDialog triggerClassName="h-10 flex-1" />
         </div>
 
-        {allKnown ? (
+        {doneForToday ? (
           <div className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900 ring-1 ring-emerald-200">
-            <p>Every word is marked as known.</p>
+            <p>
+              {nextReviewLabel
+                ? `You’re done for today. Next review ${nextReviewLabel}.`
+                : "You’re done for today."}
+            </p>
             <Button
               variant="ghost"
               className="mt-2 h-8 px-2 text-emerald-900 hover:bg-emerald-100 hover:text-emerald-950"
               onClick={resetKnown}
             >
               <RotateCcw data-icon="inline-start" />
-              Study them again
+              Make everything due today
             </Button>
           </div>
-        ) : knownCount > 0 ? (
+        ) : upcomingCount > 0 ? (
           <button
             type="button"
             onClick={resetKnown}
             className="mt-4 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
-            Reset known words
+            Make everything due today
           </button>
         ) : null}
       </section>
@@ -79,9 +89,7 @@ export function HomeView() {
       <section className="grid gap-3">
         <div className="flex items-end justify-between gap-3 px-1">
           <h2 className="font-serif text-xl tracking-tight">Words</h2>
-          <p className="text-xs text-muted-foreground">
-            Newest first
-          </p>
+          <p className="text-xs text-muted-foreground">Due first</p>
         </div>
         <CardList />
       </section>

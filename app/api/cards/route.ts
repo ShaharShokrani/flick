@@ -1,6 +1,13 @@
-import { addCardToDeck, readDeck, writeDeck } from "@/lib/cards-file";
+import {
+  addCardToDeck,
+  readDeck,
+  resetDeckSchedule,
+  reviewCardInDeck,
+  writeDeck,
+} from "@/lib/cards-file";
 import { json, API_HEADERS } from "@/lib/api";
 import { parseAddCardInput } from "@/lib/card-model";
+import { dueCards } from "@/lib/schedule";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -14,8 +21,15 @@ export function GET(request: Request) {
   const learned =
     url.searchParams.get("learned") === "1" ||
     url.searchParams.get("known") === "true";
+  const due =
+    url.searchParams.get("due") === "1" ||
+    url.searchParams.get("today") === "1";
   const cards = readDeck();
-  const result = learned ? cards.filter((card) => card.known) : cards;
+  const result = due
+    ? dueCards(cards)
+    : learned
+      ? cards.filter((card) => card.known)
+      : cards;
   return json({ cards: result });
 }
 
@@ -46,32 +60,27 @@ export async function PATCH(request: Request) {
     return json({ error: "Expected a JSON body." }, 400);
   }
 
-  if (body.resetKnown === true) {
-    const cards = readDeck().map((card) => ({ ...card, known: false }));
-    writeDeck(cards);
-    return json({ cards });
+  if (body.resetKnown === true || body.resetSchedule === true) {
+    return json({ cards: resetDeckSchedule() });
   }
 
   if (typeof body.id !== "string") {
     return json({ error: "Send the card id to update." }, 400);
   }
 
-  const cards = readDeck();
-  const current = cards.find((card) => card.id === body.id);
-  if (!current) {
-    return json({ error: "Card not found." }, 404);
+  if (body.remembered === undefined && body.known === undefined) {
+    return json({ error: "Send remembered: true or false." }, 400);
   }
 
-  const next = cards.map((card) =>
-    card.id === body.id
-      ? {
-          ...card,
-          known: typeof body.known === "boolean" ? body.known : card.known,
-        }
-      : card
-  );
-  writeDeck(next);
-  return json({ cards: next });
+  const remembered =
+    body.remembered === true ||
+    (body.remembered === undefined && body.known === true);
+
+  const updated = reviewCardInDeck(body.id, remembered);
+  if (!updated) {
+    return json({ error: "Card not found." }, 404);
+  }
+  return json(updated);
 }
 
 export function DELETE(request: Request) {

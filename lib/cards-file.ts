@@ -7,6 +7,7 @@ import {
   upsertCard,
   type AddCardInput,
 } from "@/lib/card-model";
+import { normalizeCard, resetSchedule, reviewCard } from "@/lib/schedule";
 import type { Flashcard } from "@/lib/types";
 
 export const CARDS_FILE = join(process.cwd(), "data", "cards.json");
@@ -24,7 +25,7 @@ export function readDeck(): Flashcard[] {
         ? (parsed as DeckFile).cards
         : parsed
     );
-    return cards;
+    return cards.map((card) => normalizeCard(card));
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       writeDeck(SAMPLE_CARDS);
@@ -45,4 +46,23 @@ export function addCardToDeck(input: AddCardInput) {
   const next = upsertCard(current, input);
   writeDeck(next.cards);
   return next;
+}
+
+export function reviewCardInDeck(id: string, remembered: boolean) {
+  const cards = readDeck();
+  const current = cards.find((card) => card.id === id);
+  if (!current) {
+    return null;
+  }
+  const next = cards.map((card) =>
+    card.id === id ? reviewCard(card, remembered) : card
+  );
+  writeDeck(next);
+  return { cards: next, card: next.find((card) => card.id === id) };
+}
+
+export function resetDeckSchedule() {
+  const cards = readDeck().map((card) => resetSchedule(card));
+  writeDeck(cards);
+  return cards;
 }

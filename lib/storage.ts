@@ -1,4 +1,5 @@
 import { isFlashcard, SAMPLE_CARDS } from "@/lib/card-model";
+import { normalizeCard } from "@/lib/schedule";
 import type { Flashcard } from "@/lib/types";
 
 export const STORAGE_KEY = "flick-cards-v1";
@@ -22,7 +23,7 @@ export function loadCards(): Flashcard[] {
       return [];
     }
 
-    return parsed.filter(isFlashcard);
+    return parsed.filter(isFlashcard).map((card) => normalizeCard(card));
   } catch {
     return [];
   }

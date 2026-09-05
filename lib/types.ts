@@ -5,4 +5,8 @@ export type Flashcard = {
   example: string;
   known: boolean;
   createdAt: number;
+  dueAt: number;
+  intervalDays: number;
+  repetitions: number;
+  ease: number;
 };

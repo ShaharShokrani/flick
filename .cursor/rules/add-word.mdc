@@ -24,5 +24,6 @@ Rules:
 - Pass `--known` / `"known": true` when the local user already learned the word.
 - The same word is upserted, not duplicated.
 - The open Flick window picks up new cards within a couple of seconds.
+- `GET /api/cards?due=1` lists cards the local user should learn today.
 - `GET /api/cards?learned=1` lists words the local user has already marked known.
 - If the app is down, `npm run add-word` still writes `data/cards.json`.

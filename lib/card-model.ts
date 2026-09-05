@@ -1,4 +1,13 @@
+import { normalizeCard, scheduleNewCard } from "@/lib/schedule";
 import type { Flashcard } from "@/lib/types";
+
+const NEW_SCHEDULE = {
+  known: false,
+  dueAt: 0,
+  intervalDays: 0,
+  repetitions: 0,
+  ease: 2.5,
+} as const;
 
 export const SAMPLE_CARDS: Flashcard[] = [
   {
@@ -6,32 +15,32 @@ export const SAMPLE_CARDS: Flashcard[] = [
     word: "bonjour",
     translation: "hello",
     example: "Bonjour, comment ça va ?",
-    known: false,
     createdAt: 1,
+    ...NEW_SCHEDULE,
   },
   {
     id: "sample-gato",
     word: "gato",
     translation: "cat",
     example: "El gato duerme en el sofá.",
-    known: false,
     createdAt: 2,
+    ...NEW_SCHEDULE,
   },
   {
     id: "sample-danke",
     word: "danke",
     translation: "thank you",
     example: "Danke für deine Hilfe.",
-    known: false,
     createdAt: 3,
+    ...NEW_SCHEDULE,
   },
   {
     id: "sample-acqua",
     word: "acqua",
     translation: "water",
     example: "Vorrei un bicchiere d'acqua.",
-    known: false,
     createdAt: 4,
+    ...NEW_SCHEDULE,
   },
 ];
 
@@ -62,7 +71,7 @@ export function parseCards(value: unknown): Flashcard[] {
   if (!Array.isArray(value)) {
     return [];
   }
-  return value.filter(isFlashcard);
+  return value.filter(isFlashcard).map((card) => normalizeCard(card));
 }
 
 export function normalizeWord(word: string) {
@@ -75,8 +84,8 @@ export function createCard(input: AddCardInput): Flashcard {
     word: input.word.trim(),
     translation: input.translation.trim(),
     example: input.example?.trim() ?? "",
-    known: Boolean(input.known),
     createdAt: Date.now(),
+    ...scheduleNewCard(Boolean(input.known)),
   };
 }
 
@@ -91,13 +100,18 @@ export function upsertCard(
   const existing = cards.find((card) => normalizeWord(card.word) === key);
 
   if (existing) {
-    const card: Flashcard = {
-      ...existing,
+    let card: Flashcard = {
+      ...normalizeCard(existing),
       word,
       translation,
       example: example || existing.example,
-      known: input.known ?? existing.known,
     };
+    if (input.known === true && !existing.known) {
+      card = { ...card, ...scheduleNewCard(true) };
+    }
+    if (input.known === false && existing.known) {
+      card = { ...card, ...scheduleNewCard(false) };
+    }
     return {
       card,
       created: false,

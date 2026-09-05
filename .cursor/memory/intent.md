@@ -14,14 +14,17 @@ API so agent uploads show up without a refresh.
 
 ## Learning rules
 
-- A session starts with every card that is not `known`, shuffled once.
+- Each day, Start learning only deals cards whose `dueAt` is today or
+  earlier.
 - Each card randomly starts from the word or the English. The learner
   flips it to see the other side and the example.
-- **Yes** calls `markKnown`. That card stays out of later sessions until
-  `resetKnown`.
-- **No** removes the card from the current queue only. It comes back the
-  next time the user starts learning.
+- **Yes** (`reviewCard(card, true)`): interval goes 1 day, then 3, then
+  7, then `round(interval * ease)`. The card is due on that later day.
+- **No** (`reviewCard(card, false)`): interval resets to 1 day, ease
+  drops a little, and the card is due tomorrow — not again this session.
 - Space / Enter flips. `Y` / `N` answer after a flip.
+- New cards are due today. `--known` on upload schedules the first
+  review for tomorrow.
 
 ## Stack
 
