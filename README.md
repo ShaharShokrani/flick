@@ -25,7 +25,7 @@ npm start
 ## How it works
 
 1. Add words from the home screen.
-2. Start learning. Each card shows the word first — tap to see English and the example.
+2. Start learning. Each card starts from the word or the English at random — tap to see the other side and the example.
 3. Choose Yes or No. The session ends when every remaining card has been answered.
 
 The first visit includes a few sample words so you can try the flow immediately.

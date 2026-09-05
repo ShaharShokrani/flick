@@ -21,12 +21,12 @@ export function HomeView() {
           Your deck
         </p>
         <h1 className="mt-2 font-serif text-3xl tracking-tight text-balance">
-          See a word. Say if you know it.
+          See a word or the English. Say if you know it.
         </h1>
         <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-          Add words with an English translation and an example. When you start
-          learning, each card is shown once. Yes keeps it as known. No takes it
-          out of this session.
+          Add words with an English translation and an example. Each card starts
+          from the word or the English at random. Yes keeps it as known. No
+          takes it out of this session.
         </p>
 
         <dl className="mt-5 grid grid-cols-3 gap-2 text-center">

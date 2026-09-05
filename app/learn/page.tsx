@@ -4,13 +4,18 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, RotateCcw, X } from "lucide-react";
 
-import { Flashcard } from "@/components/flashcard";
+import { Flashcard, type PromptSide } from "@/components/flashcard";
 import { SiteHeader } from "@/components/site-header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDeck } from "@/lib/deck-context";
 import type { Flashcard as FlashcardType } from "@/lib/types";
 import { useHasMounted } from "@/lib/use-has-mounted";
+
+type ReviewCard = {
+  card: FlashcardType;
+  prompt: PromptSide;
+};
 
 function shuffle<T>(items: T[]) {
   const next = [...items];
@@ -21,12 +26,23 @@ function shuffle<T>(items: T[]) {
   return next;
 }
 
+function pickPrompt(): PromptSide {
+  return Math.random() < 0.5 ? "word" : "english";
+}
+
+function dealReview(cards: FlashcardType[]): ReviewCard[] {
+  return shuffle(cards).map((card) => ({
+    card,
+    prompt: pickPrompt(),
+  }));
+}
+
 export default function LearnPage() {
   const mounted = useHasMounted();
   const { toLearn, markKnown } = useDeck();
   const [session, setSession] = useState(0);
   const [activeSession, setActiveSession] = useState<number | null>(null);
-  const [queue, setQueue] = useState<FlashcardType[] | null>(null);
+  const [queue, setQueue] = useState<ReviewCard[] | null>(null);
   const [startingCount, setStartingCount] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [knownThisSession, setKnownThisSession] = useState(0);
@@ -34,7 +50,7 @@ export default function LearnPage() {
 
   if (mounted && activeSession !== session) {
     setActiveSession(session);
-    setQueue(shuffle(toLearn));
+    setQueue(dealReview(toLearn));
     setStartingCount(toLearn.length);
     setFlipped(false);
     setKnownThisSession(0);
@@ -46,7 +62,7 @@ export default function LearnPage() {
   const finished = queue !== null && remaining === 0;
   const reviewed = knownThisSession + skippedThisSession;
 
-  function goNext(nextQueue: FlashcardType[]) {
+  function goNext(nextQueue: ReviewCard[]) {
     setFlipped(false);
     setQueue(nextQueue);
   }
@@ -55,7 +71,7 @@ export default function LearnPage() {
     if (!current) {
       return;
     }
-    markKnown(current.id);
+    markKnown(current.card.id);
     setKnownThisSession((count) => count + 1);
     goNext(queue?.slice(1) ?? []);
   }
@@ -137,8 +153,9 @@ export default function LearnPage() {
             </div>
 
             <Flashcard
-              key={current.id}
-              card={current}
+              key={`${current.card.id}-${current.prompt}`}
+              card={current.card}
+              prompt={current.prompt}
               flipped={flipped}
               onFlip={() => setFlipped((value) => !value)}
             />

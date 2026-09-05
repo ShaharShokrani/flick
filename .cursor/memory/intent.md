@@ -15,8 +15,8 @@ API so agent uploads show up without a refresh.
 ## Learning rules
 
 - A session starts with every card that is not `known`, shuffled once.
-- The card shows the word first. The learner flips it to see English and
-  the example.
+- Each card randomly starts from the word or the English. The learner
+  flips it to see the other side and the example.
 - **Yes** calls `markKnown`. That card stays out of later sessions until
   `resetKnown`.
 - **No** removes the card from the current queue only. It comes back the
