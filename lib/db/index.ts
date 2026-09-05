@@ -5,11 +5,37 @@ import { schema } from "@/lib/db/schema";
 import { SCHEMA_SQL } from "@/lib/db/sql";
 
 export class DatabaseUnavailableError extends Error {
-  constructor(cause?: unknown) {
-    super("The words database is unreachable.");
+  readonly reason: string;
+
+  constructor(reason: string, cause?: unknown) {
+    super(reason);
     this.name = "DatabaseUnavailableError";
+    this.reason = reason;
     this.cause = cause;
   }
+}
+
+// Prisma's `prisma+postgres://` URL speaks HTTP to Accelerate, so a
+// Postgres driver just times out dialing port 5432 against it.
+const CLIENT_ONLY_SCHEMES = new Set(["prisma:", "prisma+postgres:"]);
+
+export function connectionStringProblem(raw: string | undefined) {
+  if (!raw) {
+    return "DATABASE_URL is not set on this deployment.";
+  }
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return "DATABASE_URL is not a valid connection string.";
+  }
+  if (CLIENT_ONLY_SCHEMES.has(url.protocol)) {
+    return `DATABASE_URL is a ${url.protocol.slice(0, -1)} URL, which only Prisma's own client can open. Copy the direct connection string instead: postgres://USER:PASSWORD@db.prisma.io:5432/postgres?sslmode=require`;
+  }
+  if (!url.protocol.startsWith("postgres")) {
+    return `DATABASE_URL must be a postgres:// connection string, not ${url.protocol.slice(0, -1)}.`;
+  }
+  return null;
 }
 
 export function hasRemoteDatabase() {
@@ -33,12 +59,13 @@ export function getDb() {
 }
 
 export async function ensureDb() {
-  if (!process.env.DATABASE_URL) {
-    throw new DatabaseUnavailableError("DATABASE_URL is not set.");
+  const problem = connectionStringProblem(process.env.DATABASE_URL);
+  if (problem) {
+    throw new DatabaseUnavailableError(problem);
   }
 
   if (!sql) {
-    sql = postgres(process.env.DATABASE_URL, {
+    sql = postgres(process.env.DATABASE_URL!, {
       max: 1,
       ssl: "require",
       prepare: false,
@@ -65,7 +92,10 @@ export async function ensureDb() {
       sql = null;
       db = null;
       void broken.end({ timeout: 2 }).catch(() => {});
-      throw new DatabaseUnavailableError(error);
+      throw new DatabaseUnavailableError(
+        (error as Error).message ?? "Could not reach the database.",
+        error
+      );
     }
     migrated = true;
   }

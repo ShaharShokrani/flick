@@ -36,7 +36,10 @@ async function respond(run: () => Promise<Response>) {
   } catch (error) {
     if (error instanceof DatabaseUnavailableError) {
       return json(
-        { error: "The words database is unreachable. Check DATABASE_URL." },
+        {
+          error: "The words database is unreachable.",
+          reason: error.reason,
+        },
         503
       );
     }

@@ -2,7 +2,7 @@ import { toNextJsHandler } from "better-auth/next-js";
 
 import { getAuth, isAuthConfigured } from "@/lib/auth";
 import { json } from "@/lib/api";
-import { ensureDb } from "@/lib/db";
+import { DatabaseUnavailableError, ensureDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -19,9 +19,13 @@ async function handler(request: Request) {
   }
   try {
     await ensureDb();
-  } catch {
+  } catch (error) {
     return json(
-      { error: "The words database is unreachable. Check DATABASE_URL." },
+      {
+        error: "The words database is unreachable.",
+        reason:
+          error instanceof DatabaseUnavailableError ? error.reason : undefined,
+      },
       503
     );
   }

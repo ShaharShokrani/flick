@@ -1,6 +1,7 @@
 import postgres from "postgres";
 
 import { json } from "@/lib/api";
+import { connectionStringProblem } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -30,9 +31,10 @@ function describeTarget(raw: string) {
 
 export async function GET() {
   const url = process.env.DATABASE_URL;
-  if (!url) {
+  const problem = connectionStringProblem(url);
+  if (problem || !url) {
     return json(
-      { ok: false, error: "DATABASE_URL is not set on this deployment." },
+      { ok: false, target: url ? describeTarget(url) : null, error: problem },
       503
     );
   }
