@@ -5,9 +5,8 @@ A tiny flashcard app for the web and Android. Add a word, the English translatio
 - **Yes** — you know it. The next review waits longer: 1 day, then 3, then 7, then further apart.
 - **No** — you do not know it. It leaves this session and comes back tomorrow.
 
-Sign in with Google, email, or a guest code so the same deck follows you
-from computer to phone. Without sign-in, localhost still uses
-`data/cards.json` and the public site keeps words in the phone browser.
+Sign in with Google, email, or a guest code. Words are stored in a
+cloud database, not on the phone.
 
 ## Run locally
 
@@ -31,20 +30,15 @@ npm start
 
 The first visit includes a few sample words so you can try the flow immediately.
 
-## Sign in and sync
+## Sign in
 
-1. Copy `.env.example` to `.env.local`.
-2. Set `BETTER_AUTH_SECRET` to a long random string.
-3. For phone + computer, create a free [Neon](https://neon.tech) Postgres database and put the same `DATABASE_URL` in `.env.local` **and** in the Vercel project env vars. Also set `BETTER_AUTH_URL` to `https://temporary-brisk-mesa-ty777ur.vercel.app` on Vercel.
-4. Optional: add `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. The Google redirect URL is `{BETTER_AUTH_URL}/api/auth/callback/google`.
+Words are saved in cloud Postgres (`DATABASE_URL` on Vercel).
 
-Then tap **Sign in**:
+- **Google** — if `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set.
+- **Email** — create a login, then sign in.
+- **Guest** — get a code (`XXXX-XXXX`) and enter it later.
 
-- **Google** — if those env vars are set.
-- **Email** — create an account on one device, sign in with the same email on the other.
-- **Guest** — get an 8-character code (`XXXX-XXXX`) and enter it on the phone.
-
-Local `npm run dev` can run without `DATABASE_URL` (it uses `data/pglite`). That local database is not the phone. Use the same Neon URL on both sides to share words.
+Set `DATABASE_URL`, `BETTER_AUTH_SECRET`, and `BETTER_AUTH_URL` in Vercel. Optional Google redirect: `{BETTER_AUTH_URL}/api/auth/callback/google`.
 
 ## Use it from anywhere
 
@@ -63,7 +57,7 @@ connect this GitHub repo in the Vercel dashboard: the project →
 Or set `VERCEL_TOKEN` and `VERCEL_ORG_ID` and run `npm run deploy`.
 Do not commit Vercel tokens.
 
-On the public site without sign-in, cards stay in the phone’s browser. The `data/cards.json` API is for unsigned-in localhost use and agent uploads.
+Unsigned-in visitors see sample cards. Agent uploads on localhost still write `data/cards.json`.
 
 ## Add a word as an agent
 

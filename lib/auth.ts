@@ -27,7 +27,6 @@ export function authFeatures() {
   return {
     configured: isAuthConfigured(),
     google: googleEnabled,
-    remoteDatabase: Boolean(process.env.DATABASE_URL),
     appUrl,
   };
 }

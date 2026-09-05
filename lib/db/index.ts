@@ -1,5 +1,5 @@
-import { mkdirSync } from "node:fs";
-import { join } from "node:path";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 
 import { schema } from "@/lib/db/schema";
 import { SCHEMA_SQL } from "@/lib/db/sql";
@@ -9,15 +9,12 @@ export function hasRemoteDatabase() {
 }
 
 export function canUseDatabase() {
-  if (hasRemoteDatabase()) {
-    return true;
-  }
-  return !process.env.VERCEL;
+  return hasRemoteDatabase();
 }
 
-// Drizzle handles for Better Auth and card queries. Created in ensureDb().
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let db: any = null;
+let sql: ReturnType<typeof postgres> | null = null;
 let migrated = false;
 
 export function getDb() {
@@ -28,38 +25,28 @@ export function getDb() {
 }
 
 export async function ensureDb() {
-  if (!canUseDatabase()) {
-    throw new Error("No shared database is configured.");
+  if (!process.env.DATABASE_URL) {
+    throw new Error("No cloud database is configured.");
   }
 
-  if (process.env.DATABASE_URL) {
-    if (!db) {
-      const { neon } = await import("@neondatabase/serverless");
-      const { drizzle } = await import("drizzle-orm/neon-http");
-      db = drizzle(neon(process.env.DATABASE_URL), { schema });
-    }
-    if (!migrated) {
-      const { neon } = await import("@neondatabase/serverless");
-      const sql = neon(process.env.DATABASE_URL);
-      for (const statement of SCHEMA_SQL.split(";")
-        .map((part) => part.trim())
-        .filter(Boolean)) {
-        await sql.query(statement);
-      }
-      migrated = true;
-    }
-    return db;
+  if (!sql) {
+    sql = postgres(process.env.DATABASE_URL, {
+      max: 1,
+      ssl: "require",
+      prepare: false,
+    });
+    db = drizzle(sql, { schema });
   }
 
-  if (!db) {
-    const { PGlite } = await import("@electric-sql/pglite");
-    const { drizzle } = await import("drizzle-orm/pglite");
-    const dir = join(process.cwd(), "data", "pglite");
-    mkdirSync(dir, { recursive: true });
-    const client = new PGlite(dir);
-    await client.exec(SCHEMA_SQL);
-    db = drizzle(client, { schema });
+  if (!migrated) {
+    const statements = SCHEMA_SQL.split(";")
+      .map((statement) => statement.trim())
+      .filter(Boolean);
+    for (const statement of statements) {
+      await sql.unsafe(statement);
+    }
     migrated = true;
   }
+
   return db;
 }

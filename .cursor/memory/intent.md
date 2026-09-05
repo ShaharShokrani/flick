@@ -8,16 +8,11 @@ copies it into the generated snapshot.
 A browser flashcard app. The user adds a word, the English translation,
 and an optional example, then reviews unread cards.
 
-On localhost without sign-in, the deck is `data/cards.json` via
-`/api/cards` so agents can upload words. On a public host without
-sign-in, the phone browser keeps the deck in `localStorage` only.
-
-Signed-in users (Google, email, or guest) store cards in the shared
-Postgres database, keyed by user. The same account on computer and
-phone sees the same words. Guest accounts get an 8-character code
-(`XXXX-XXXX`) to open that deck on another device. Local `npm run dev`
-can use PGlite in `data/pglite` when `DATABASE_URL` is unset. Vercel
-needs `DATABASE_URL` and `BETTER_AUTH_SECRET` for sign-in to work.
+Words for signed-in users live in cloud Postgres (`DATABASE_URL`),
+not on the phone or computer. Sign in with Google, email, or guest.
+Guest gets an 8-character code (`XXXX-XXXX`). Unsigned-in visitors
+see sample cards only. Localhost `data/cards.json` is still used by
+the agent upload API when nobody is signed in.
 
 ## Learning rules
 

@@ -3,12 +3,10 @@
 import { editCard, upsertCard } from "@/lib/card-model";
 import { resetSchedule, reviewCard } from "@/lib/schedule";
 import {
-  canUseLocalApi,
   hasMigratedLocalDeck,
   loadCards,
   markLocalDeckMigrated,
   SAMPLE_CARDS,
-  saveCards,
 } from "@/lib/storage";
 import type { Flashcard } from "@/lib/types";
 
@@ -40,7 +38,6 @@ function emit() {
 
 function replace(cards: Flashcard[]) {
   state = cards;
-  saveCards(cards);
   emit();
 }
 
@@ -125,13 +122,13 @@ async function bootstrap() {
     replace(await migrateLocalCards(remote));
   } catch {
     if (state === null) {
-      replace(loadCards());
+      replace(SAMPLE_CARDS);
     }
   }
 }
 
 function shouldUseRemoteApi() {
-  return cloudSync || canUseLocalApi();
+  return cloudSync;
 }
 
 async function importLocalDeck(userId: string) {
@@ -157,9 +154,7 @@ export async function enableCloudSync(userId: string | null) {
   cloudSync = next;
   if (!next) {
     importedForUser = null;
-    if (!canUseLocalApi()) {
-      replace(loadCards());
-    }
+    replace(SAMPLE_CARDS);
     return;
   }
   if (userId) {
@@ -174,7 +169,7 @@ function start() {
   }
   started = true;
   if (!shouldUseRemoteApi()) {
-    replace(loadCards());
+    replace(SAMPLE_CARDS);
   } else {
     void bootstrap();
   }
@@ -200,7 +195,7 @@ export function subscribe(listener: () => void) {
 
 export function getClientSnapshot() {
   if (state === null) {
-    state = loadCards();
+    state = SAMPLE_CARDS;
     start();
   }
   return state;

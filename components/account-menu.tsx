@@ -18,7 +18,6 @@ import { isGuestEmail } from "@/lib/guest-code";
 type Features = {
   configured: boolean;
   google: boolean;
-  remoteDatabase: boolean;
 };
 
 export function AccountMenu() {
@@ -35,7 +34,6 @@ export function AccountMenu() {
         setFeatures({
           configured: false,
           google: false,
-          remoteDatabase: false,
         });
       });
   }, []);
@@ -87,19 +85,14 @@ export function AccountMenu() {
       <Dialog open={accountOpen} onOpenChange={setAccountOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{guest ? "Guest account" : "Your account"}</DialogTitle>
+            <DialogTitle>{guest ? "Guest" : "Signed in"}</DialogTitle>
             <DialogDescription>
-              {features?.remoteDatabase
-                ? "Words you add here show up on any device signed into this account."
-                : "This computer is using a local database. Add DATABASE_URL on Vercel and this computer so your phone sees the same words."}
+              {guest
+                ? "Your words are saved in the cloud. Keep this code."
+                : user.email}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 text-sm">
-            <p className="text-muted-foreground">
-              {guest
-                ? "You are signed in as a guest. Enter this code on your phone to open the same deck."
-                : user.email}
-            </p>
             {guestCode ? (
               <p className="rounded-xl bg-secondary px-4 py-3 text-center font-mono text-2xl tracking-[0.2em]">
                 {guestCode}

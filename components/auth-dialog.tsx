@@ -18,7 +18,6 @@ import { generateGuestCode, normalizeGuestCode, guestEmail } from "@/lib/guest-c
 type Features = {
   configured: boolean;
   google: boolean;
-  remoteDatabase: boolean;
 } | null;
 
 type AuthDialogProps = {
@@ -97,7 +96,7 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
     });
     setBusy(false);
     if (result.error) {
-      setError(result.error.message ?? "Could not start a guest account.");
+      setError(result.error.message ?? "Could not start a guest session.");
       return;
     }
     setGuestCode(nextCode);
@@ -108,7 +107,7 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
     event.preventDefault();
     const normalized = normalizeGuestCode(code);
     if (!normalized) {
-      setError("Use the 8-character code from your other device.");
+      setError("That code should look like 7K2M-9Q4P.");
       return;
     }
     setBusy(true);
@@ -147,24 +146,26 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
                 ? "Enter a guest code"
                 : mode === "email"
                   ? creating
-                    ? "Create an email account"
+                    ? "Create an email login"
                     : "Sign in with email"
                   : "Sign in"}
           </DialogTitle>
           <DialogDescription>
             {mode === "guest-ready"
-              ? "Enter this code on your phone so both devices share the same words."
-              : "Use the same account on your computer and phone. The deck follows you."}
+              ? "Save this code. You can enter it later to open your words."
+              : mode === "code"
+                ? "Paste the guest code you already have."
+                : mode === "email"
+                  ? creating
+                    ? "Pick an email and a password."
+                    : "Enter your email and password."
+                  : "Google, email, or guest. Your words stay in the cloud."}
           </DialogDescription>
         </DialogHeader>
 
         {!configured ? (
           <p className="text-sm leading-6 text-muted-foreground">
-            Sign-in needs a shared database. Add{" "}
-            <code className="font-mono text-xs">BETTER_AUTH_SECRET</code> and a
-            Neon <code className="font-mono text-xs">DATABASE_URL</code> on
-            Vercel and in local <code className="font-mono text-xs">.env.local</code>.
-            Google is optional.
+            Cloud sign-in is still starting up. Try again in a moment.
           </p>
         ) : mode === "choose" ? (
           <div className="grid gap-2">
@@ -188,15 +189,8 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
               className="mt-1 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
               onClick={() => setMode("code")}
             >
-              I already have a guest code
+              I have a guest code
             </button>
-            {!features?.remoteDatabase ? (
-              <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                This computer is using a local database. Your phone will only
-                see these words after you add the same{" "}
-                <code className="font-mono">DATABASE_URL</code> on Vercel.
-              </p>
-            ) : null}
             {error ? (
               <p className="text-sm text-destructive" role="alert">
                 {error}
@@ -234,7 +228,7 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
               </p>
             ) : null}
             <Button type="submit" disabled={busy}>
-              {creating ? "Create account" : "Sign in"}
+              {creating ? "Create login" : "Sign in"}
             </Button>
             <button
               type="button"
@@ -244,9 +238,7 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
                 setError("");
               }}
             >
-              {creating
-                ? "Already have an account? Sign in"
-                : "New here? Create an account"}
+              {creating ? "I already have an email login" : "Create an email login"}
             </button>
           </form>
         ) : mode === "code" ? (
@@ -268,16 +260,13 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
               </p>
             ) : null}
             <Button type="submit" disabled={busy}>
-              Open this deck
+              Open words
             </Button>
           </form>
         ) : (
           <div className="grid gap-3">
             <p className="rounded-xl bg-secondary px-4 py-3 text-center font-mono text-2xl tracking-[0.2em]">
               {guestCode}
-            </p>
-            <p className="text-sm leading-6 text-muted-foreground">
-              On your phone, tap Sign in → I already have a guest code.
             </p>
             <Button
               onClick={() => {

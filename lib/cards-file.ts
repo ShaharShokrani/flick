@@ -43,8 +43,8 @@ export function writeDeck(cards: Flashcard[]) {
     const payload: DeckFile = { cards };
     writeFileSync(CARDS_FILE, `${JSON.stringify(payload, null, 2)}\n`);
   } catch {
-    // Hosts like Vercel have a read-only filesystem. The phone app
-    // keeps the deck in localStorage instead.
+    // Hosts like Vercel have a read-only filesystem. Signed-in decks
+    // live in cloud Postgres, not this file.
   }
 }
 
