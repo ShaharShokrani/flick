@@ -1,8 +1,8 @@
 import type { Flashcard } from "@/lib/types";
 
 export const DEFAULT_EASE = 2.5;
-const MIN_EASE = 1.3;
-const MAX_EASE = 3.0;
+export const MIN_EASE = 1.3;
+export const MAX_EASE = 3.0;
 
 export function startOfDay(at = Date.now()) {
   const date = new Date(at);
@@ -159,6 +159,28 @@ export function formatDue(card: Flashcard, now = Date.now()) {
   return new Date(normalizeCard(card, now).dueAt).toLocaleDateString(
     undefined,
     { month: "short", day: "numeric" }
+  );
+}
+
+export function knowledgePercent(card: Flashcard, now = Date.now()) {
+  const current = normalizeCard(card, now);
+  const unseen =
+    current.repetitions === 0 && current.intervalDays === 0 && !current.known;
+  if (unseen) {
+    return 0;
+  }
+
+  const intervalScore = Math.min(
+    1,
+    Math.log2(1 + current.intervalDays) / Math.log2(61)
+  );
+  const easeScore = Math.min(
+    1,
+    Math.max(0, (current.ease - MIN_EASE) / (MAX_EASE - MIN_EASE))
+  );
+  const reviewScore = Math.min(1, current.repetitions / 8);
+  return Math.round(
+    (0.5 * intervalScore + 0.25 * easeScore + 0.25 * reviewScore) * 100
   );
 }
 

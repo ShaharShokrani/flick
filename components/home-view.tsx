@@ -1,23 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, RotateCcw } from "lucide-react";
+import { BookOpen, Library, RotateCcw } from "lucide-react";
 
-import { AddCardDialog } from "@/components/add-card-dialog";
 import { AndroidInstallHint } from "@/components/android-install-hint";
-import { CardList } from "@/components/card-list";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useDeck } from "@/lib/deck-context";
 import { cn } from "@/lib/utils";
 
 export function HomeView() {
-  const {
-    cards,
-    toLearn,
-    upcomingCount,
-    nextReviewLabel,
-    resetKnown,
-  } = useDeck();
+  const { cards, toLearn, upcomingCount, nextReviewLabel, resetKnown } =
+    useDeck();
   const canLearn = toLearn.length > 0;
   const empty = cards.length === 0;
   const doneForToday = !empty && !canLearn;
@@ -57,7 +50,16 @@ export function HomeView() {
               {empty ? "Add a word first" : "Nothing due today"}
             </Button>
           )}
-          <AddCardDialog triggerClassName="h-10 flex-1" />
+          <Link
+            href="/words"
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-10 flex-1"
+            )}
+          >
+            <Library data-icon="inline-start" />
+            {empty ? "Add words" : "Your words"}
+          </Link>
         </div>
         <div className="mt-4">
           <AndroidInstallHint />
@@ -88,14 +90,6 @@ export function HomeView() {
             Make everything due today
           </button>
         ) : null}
-      </section>
-
-      <section className="grid gap-3">
-        <div className="flex items-end justify-between gap-3 px-1">
-          <h2 className="font-serif text-xl tracking-tight">Words</h2>
-          <p className="text-xs text-muted-foreground">Due first</p>
-        </div>
-        <CardList />
       </section>
     </div>
   );

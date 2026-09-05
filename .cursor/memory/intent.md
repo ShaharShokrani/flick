@@ -33,6 +33,8 @@ phone browser keeps the deck in `localStorage` only.
   `.githooks/pre-push`).
 - New cards are due today. `--known` on upload schedules the first
   review for tomorrow.
+- Words live on `/words`, not the home screen. Each word is editable
+  and shows a % of how well it is known from Yes/No reviews.
 
 ## Stack
 
@@ -41,7 +43,8 @@ port `43147`.
 
 ## Surfaces
 
-- `/` — deck stats, add/delete cards, start learning
+- `/` — deck stats and start learning
+- `/words` — add, edit, and delete cards, with a knowledge %
 - `/learn` — one-pass Yes/No session
 - `POST /api/cards` — agent or CLI upload of a word
 - `GET /api/cards?learned=1` — words the local user already knows

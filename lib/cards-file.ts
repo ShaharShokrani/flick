@@ -2,10 +2,12 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import {
+  editCard,
   parseCards,
   SAMPLE_CARDS,
   upsertCard,
   type AddCardInput,
+  type EditCardInput,
 } from "@/lib/card-model";
 import { normalizeCard, resetSchedule, reviewCard } from "@/lib/schedule";
 import type { Flashcard } from "@/lib/types";
@@ -51,6 +53,15 @@ export function addCardToDeck(input: AddCardInput) {
   const next = upsertCard(current, input);
   writeDeck(next.cards);
   return next;
+}
+
+export function updateCardInDeck(input: EditCardInput) {
+  const result = editCard(readDeck(), input);
+  if ("error" in result) {
+    return result;
+  }
+  writeDeck(result.cards);
+  return result;
 }
 
 export function reviewCardInDeck(id: string, remembered: boolean) {

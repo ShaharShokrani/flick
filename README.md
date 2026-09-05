@@ -24,9 +24,9 @@ npm start
 
 ## How it works
 
-1. Add words from the home screen.
-2. Start learning. Only cards due today are shown. Each card starts from the word or the English at random — tap to see the other side and the example.
-3. Tap to flip. Swipe right if you know it, left if you do not. Yes schedules a later day. No comes back tomorrow.
+1. Open **Words** to add or edit cards. Each word shows a % of how well you know it.
+2. Start learning from the home screen. Only cards due today are shown. Each card starts from the word or the English at random — tap to see the other side and the example.
+3. Tap to flip. Swipe right if you know it, left if you do not. Yes schedules a later day. No comes back tomorrow. The % on Words goes up after Yes and down after No.
 
 The first visit includes a few sample words so you can try the flow immediately.
 

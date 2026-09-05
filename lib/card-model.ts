@@ -51,6 +51,13 @@ export type AddCardInput = {
   known?: boolean;
 };
 
+export type EditCardInput = {
+  id: string;
+  word: string;
+  translation: string;
+  example?: string;
+};
+
 export function isFlashcard(value: unknown): value is Flashcard {
   if (!value || typeof value !== "object") {
     return false;
@@ -121,6 +128,65 @@ export function upsertCard(
 
   const card = createCard({ word, translation, example, known: input.known });
   return { card, created: true, cards: [card, ...cards] };
+}
+
+export function editCard(
+  cards: Flashcard[],
+  input: EditCardInput
+):
+  | { cards: Flashcard[]; card: Flashcard }
+  | { error: "not-found" | "duplicate" } {
+  const word = input.word.trim();
+  const translation = input.translation.trim();
+  const example = input.example?.trim() ?? "";
+  const current = cards.find((card) => card.id === input.id);
+
+  if (!current || !word || !translation) {
+    return { error: "not-found" };
+  }
+
+  const key = normalizeWord(word);
+  const duplicate = cards.some(
+    (card) => card.id !== input.id && normalizeWord(card.word) === key
+  );
+  if (duplicate) {
+    return { error: "duplicate" };
+  }
+
+  const card: Flashcard = {
+    ...normalizeCard(current),
+    word,
+    translation,
+    example,
+  };
+
+  return {
+    card,
+    cards: cards.map((item) => (item.id === input.id ? card : item)),
+  };
+}
+
+export function parseEditCardInput(value: unknown): EditCardInput | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const body = value as Record<string, unknown>;
+  const id = typeof body.id === "string" ? body.id : "";
+  const word = typeof body.word === "string" ? body.word.trim() : "";
+  const translation =
+    typeof body.translation === "string"
+      ? body.translation.trim()
+      : typeof body.english === "string"
+        ? body.english.trim()
+        : "";
+  const example = typeof body.example === "string" ? body.example : "";
+
+  if (!id || !word || !translation) {
+    return null;
+  }
+
+  return { id, word, translation, example };
 }
 
 export function parseAddCardInput(value: unknown): AddCardInput | null {

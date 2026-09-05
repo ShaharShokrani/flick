@@ -212,7 +212,7 @@ function SessionDone({
       </h1>
       <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
         {empty
-          ? "Add a word to your deck, then come back to flip through it."
+          ? "Add a word on the Words page, then come back to flip through it."
           : `You went through ${reviewed} ${reviewed === 1 ? "card" : "cards"}. Yes waits longer next time. No comes back tomorrow.${nextReviewLabel ? ` Next review ${nextReviewLabel}.` : ""}`}
       </p>
 
@@ -242,6 +242,14 @@ function SessionDone({
           <ArrowLeft data-icon="inline-start" />
           Back to deck
         </Link>
+        {empty ? (
+          <Link
+            href="/words"
+            className={cn(buttonVariants({ variant: "outline" }), "h-10")}
+          >
+            Add words
+          </Link>
+        ) : null}
       </div>
     </section>
   );

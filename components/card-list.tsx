@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Trash2 } from "lucide-react";
+import { Check, Pencil, Trash2 } from "lucide-react";
 
+import { CardFormDialog } from "@/components/card-form-dialog";
+import { KnowledgeMeter } from "@/components/knowledge-meter";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,11 +15,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useDeck } from "@/lib/deck-context";
-import { formatDue, isDue } from "@/lib/schedule";
+import { formatDue, isDue, knowledgePercent } from "@/lib/schedule";
 import type { Flashcard } from "@/lib/types";
 
 export function CardList() {
   const { cards, deleteCard } = useDeck();
+  const [editing, setEditing] = useState<Flashcard | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Flashcard | null>(null);
 
   if (cards.length === 0) {
@@ -34,49 +37,81 @@ export function CardList() {
   return (
     <>
       <ul className="grid gap-3">
-        {sortByDue(cards).map((card) => (
-          <li
-            key={card.id}
-            className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-foreground/8"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-serif text-xl leading-tight tracking-tight">
-                    {card.word}
-                  </p>
-                  {isDue(card) ? (
-                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-900 ring-1 ring-amber-200">
-                      Due today
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-800 ring-1 ring-emerald-200">
-                      <Check className="size-3" />
-                      {formatDue(card)}
-                    </span>
-                  )}
+        {sortByDue(cards).map((card) => {
+          const known = knowledgePercent(card);
+          return (
+            <li key={card.id}>
+              <div className="flex items-stretch gap-2 rounded-2xl bg-card p-3 shadow-sm ring-1 ring-foreground/8 sm:p-4">
+                <button
+                  type="button"
+                  onClick={() => setEditing(card)}
+                  className="flex min-w-0 flex-1 items-start gap-3 rounded-xl px-1 py-0.5 text-left hover:bg-foreground/4"
+                >
+                  <KnowledgeMeter value={known} word={card.word} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-serif text-xl leading-tight tracking-tight">
+                        {card.word}
+                      </p>
+                      {isDue(card) ? (
+                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-900 ring-1 ring-amber-200">
+                          Due today
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-800 ring-1 ring-emerald-200">
+                          <Check className="size-3" />
+                          {formatDue(card)}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {card.translation}
+                    </p>
+                    {card.example ? (
+                      <p className="mt-2 text-sm leading-6 text-foreground/80">
+                        {card.example}
+                      </p>
+                    ) : null}
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {known === 0
+                        ? "Not reviewed yet"
+                        : `${known}% known · tap to edit`}
+                    </p>
+                  </div>
+                </button>
+                <div className="flex shrink-0 flex-col gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Edit ${card.word}`}
+                    onClick={() => setEditing(card)}
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Delete ${card.word}`}
+                    onClick={() => setPendingDelete(card)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {card.translation}
-                </p>
-                {card.example ? (
-                  <p className="mt-2 text-sm leading-6 text-foreground/80">
-                    {card.example}
-                  </p>
-                ) : null}
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`Delete ${card.word}`}
-                onClick={() => setPendingDelete(card)}
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
+
+      <CardFormDialog
+        card={editing}
+        open={editing !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditing(null);
+          }
+        }}
+      />
 
       <Dialog
         open={pendingDelete !== null}

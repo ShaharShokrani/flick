@@ -11,6 +11,7 @@ import {
 import {
   addCard as addCardToStore,
   deleteCard as deleteCardFromStore,
+  updateCard as updateCardInStore,
   getClientSnapshot,
   getServerSnapshot,
   resetKnown as resetKnownInStore,
@@ -27,6 +28,13 @@ type AddCardInput = {
   known?: boolean;
 };
 
+type EditCardInput = {
+  id: string;
+  word: string;
+  translation: string;
+  example: string;
+};
+
 type DeckContextValue = {
   cards: Flashcard[];
   toLearn: Flashcard[];
@@ -34,6 +42,7 @@ type DeckContextValue = {
   upcomingCount: number;
   nextReviewLabel: string | null;
   addCard: (input: AddCardInput) => Promise<void>;
+  updateCard: (input: EditCardInput) => Promise<void>;
   deleteCard: (id: string) => Promise<void>;
   markKnown: (id: string) => Promise<void>;
   markForgotten: (id: string) => Promise<void>;
@@ -60,6 +69,9 @@ export function DeckProvider({ children }: { children: ReactNode }) {
       nextReviewLabel: nextAt ? formatNextReview(nextAt) : null,
       addCard: async (input) => {
         await addCardToStore(input);
+      },
+      updateCard: async (input) => {
+        await updateCardInStore(input);
       },
       deleteCard: async (id) => {
         await deleteCardFromStore(id);

@@ -9,9 +9,14 @@ export function SiteHeader() {
         </span>
         <span className="font-serif text-xl tracking-tight">Flick</span>
       </Link>
-      <p className="text-xs tracking-wide text-muted-foreground uppercase">
-        Flashcards only
-      </p>
+      <nav className="flex items-center gap-4 text-sm">
+        <Link
+          href="/words"
+          className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        >
+          Words
+        </Link>
+      </nav>
     </header>
   );
 }

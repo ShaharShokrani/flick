@@ -1,6 +1,6 @@
 "use client";
 
-import { upsertCard } from "@/lib/card-model";
+import { editCard, upsertCard } from "@/lib/card-model";
 import { resetSchedule, reviewCard } from "@/lib/schedule";
 import {
   canUseLocalApi,
@@ -17,6 +17,13 @@ type AddCardInput = {
   translation: string;
   example: string;
   known?: boolean;
+};
+
+type EditCardInput = {
+  id: string;
+  word: string;
+  translation: string;
+  example: string;
 };
 
 let state: Flashcard[] | null = null;
@@ -175,6 +182,48 @@ export async function addCard(input: AddCardInput) {
     replace(fallback.cards);
     return fallback.card;
   }
+  const data = (await response.json()) as {
+    card?: Flashcard;
+    cards?: Flashcard[];
+  };
+  if (Array.isArray(data.cards)) {
+    replace(data.cards);
+  }
+  return data.card;
+}
+
+export async function updateCard(input: EditCardInput) {
+  if (!canUseLocalApi()) {
+    const result = editCard(getClientSnapshot(), input);
+    if ("error" in result) {
+      throw new Error(
+        result.error === "duplicate"
+          ? "That word is already in the deck."
+          : "Card not found."
+      );
+    }
+    replace(result.cards);
+    return result.card;
+  }
+
+  const response = await fetch("/api/cards", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    const result = editCard(getClientSnapshot(), input);
+    if ("error" in result) {
+      throw new Error(
+        result.error === "duplicate"
+          ? "That word is already in the deck."
+          : "Could not save that card."
+      );
+    }
+    replace(result.cards);
+    return result.card;
+  }
+
   const data = (await response.json()) as {
     card?: Flashcard;
     cards?: Flashcard[];

@@ -3,10 +3,11 @@ import {
   readDeck,
   resetDeckSchedule,
   reviewCardInDeck,
+  updateCardInDeck,
   writeDeck,
 } from "@/lib/cards-file";
 import { json, API_HEADERS } from "@/lib/api";
-import { parseAddCardInput } from "@/lib/card-model";
+import { parseAddCardInput, parseEditCardInput } from "@/lib/card-model";
 import { dueCards } from "@/lib/schedule";
 
 export const dynamic = "force-dynamic";
@@ -66,6 +67,31 @@ export async function PATCH(request: Request) {
 
   if (typeof body.id !== "string") {
     return json({ error: "Send the card id to update." }, 400);
+  }
+
+  if (
+    body.word !== undefined ||
+    body.translation !== undefined ||
+    body.english !== undefined ||
+    body.example !== undefined
+  ) {
+    const input = parseEditCardInput(body);
+    if (!input) {
+      return json({ error: "Send the word and its English translation." }, 400);
+    }
+    const updated = updateCardInDeck(input);
+    if ("error" in updated) {
+      return json(
+        {
+          error:
+            updated.error === "duplicate"
+              ? "That word is already in the deck."
+              : "Card not found.",
+        },
+        updated.error === "duplicate" ? 409 : 404
+      );
+    }
+    return json(updated);
   }
 
   if (body.remembered === undefined && body.known === undefined) {
