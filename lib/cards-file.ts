@@ -31,14 +31,19 @@ export function readDeck(): Flashcard[] {
       writeDeck(SAMPLE_CARDS);
       return SAMPLE_CARDS;
     }
-    throw error;
+    return SAMPLE_CARDS;
   }
 }
 
 export function writeDeck(cards: Flashcard[]) {
-  mkdirSync(dirname(CARDS_FILE), { recursive: true });
-  const payload: DeckFile = { cards };
-  writeFileSync(CARDS_FILE, `${JSON.stringify(payload, null, 2)}\n`);
+  try {
+    mkdirSync(dirname(CARDS_FILE), { recursive: true });
+    const payload: DeckFile = { cards };
+    writeFileSync(CARDS_FILE, `${JSON.stringify(payload, null, 2)}\n`);
+  } catch {
+    // Hosts like Vercel have a read-only filesystem. The phone app
+    // keeps the deck in localStorage instead.
+  }
 }
 
 export function addCardToDeck(input: AddCardInput) {

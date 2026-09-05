@@ -30,9 +30,15 @@ npm start
 
 The first visit includes a few sample words so you can try the flow immediately.
 
-## Android
+## Use it from anywhere
 
-Open the site in Chrome, then menu → **Add to Home screen**. Flick installs as a standalone app. Learning is swipe-first: right = Yes, left = No.
+Deploy the GitHub repo to Vercel (one click):
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ShaharShokrani/flick)
+
+Then open the `https://….vercel.app` link in Chrome on your phone → menu → **Add to Home screen**.
+
+On the public site, cards stay in the phone’s browser. The `data/cards.json` API is for when you run Flick on your own computer.
 
 ## Add a word as an agent
 

@@ -8,9 +8,9 @@ copies it into the generated snapshot.
 A browser flashcard app. The user adds a word, the English translation,
 and an optional example, then reviews unread cards.
 
-There is no account. The local user's deck is `data/cards.json`, exposed
-at `/api/cards`. The browser keeps a `localStorage` cache and polls the
-API so agent uploads show up without a refresh.
+There is no account. On localhost, the deck is `data/cards.json` via
+`/api/cards` so agents can upload words. On a public host (Vercel), the
+phone browser keeps the deck in `localStorage` only.
 
 ## Learning rules
 
@@ -25,7 +25,7 @@ API so agent uploads show up without a refresh.
 - Tap flips the card. Swipe right is Yes, swipe left is No. Space /
   Enter flips. `Y` / `N` also answer. Desktop still has Yes/No buttons.
 - The app is a PWA (`app/manifest.ts`) so Android Chrome can Add to
-  Home screen and run it fullscreen.
+  Home screen and run it fullscreen. Public deploys are Vercel.
 - New cards are due today. `--known` on upload schedules the first
   review for tomorrow.
 

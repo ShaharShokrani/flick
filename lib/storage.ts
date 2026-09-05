@@ -43,3 +43,11 @@ export function hasMigratedLocalDeck() {
 export function markLocalDeckMigrated() {
   window.localStorage.setItem(MIGRATED_KEY, "1");
 }
+
+export function canUseLocalApi() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  const host = window.location.hostname;
+  return host === "localhost" || host === "127.0.0.1";
+}

@@ -3,6 +3,7 @@
 import { upsertCard } from "@/lib/card-model";
 import { resetSchedule, reviewCard } from "@/lib/schedule";
 import {
+  canUseLocalApi,
   hasMigratedLocalDeck,
   loadCards,
   markLocalDeckMigrated,
@@ -125,6 +126,10 @@ function start() {
     return;
   }
   started = true;
+  if (!canUseLocalApi()) {
+    replace(loadCards());
+    return;
+  }
   void bootstrap();
   window.setInterval(() => {
     void refreshCards();
@@ -155,6 +160,11 @@ export function getServerSnapshot() {
 }
 
 export async function addCard(input: AddCardInput) {
+  if (!canUseLocalApi()) {
+    const fallback = upsertCard(getClientSnapshot(), input);
+    replace(fallback.cards);
+    return fallback.card;
+  }
   const response = await fetch("/api/cards", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -176,6 +186,10 @@ export async function addCard(input: AddCardInput) {
 }
 
 export async function deleteCard(id: string) {
+  if (!canUseLocalApi()) {
+    replace(getClientSnapshot().filter((card) => card.id !== id));
+    return;
+  }
   const response = await fetch(`/api/cards?id=${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
@@ -190,6 +204,14 @@ export async function deleteCard(id: string) {
 }
 
 export async function review(id: string, remembered: boolean) {
+  if (!canUseLocalApi()) {
+    replace(
+      getClientSnapshot().map((card) =>
+        card.id === id ? reviewCard(card, remembered) : card
+      )
+    );
+    return;
+  }
   const response = await fetch("/api/cards", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -214,6 +236,10 @@ export async function markKnown(id: string) {
 }
 
 export async function resetKnown() {
+  if (!canUseLocalApi()) {
+    replace(getClientSnapshot().map((card) => resetSchedule(card)));
+    return;
+  }
   const response = await fetch("/api/cards", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
