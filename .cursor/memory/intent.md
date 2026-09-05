@@ -29,8 +29,8 @@ phone browser keeps the deck in `localStorage` only.
 - Public site: https://temporary-brisk-mesa-ty777ur.vercel.app/
   That Vercel project is claimed. New commits reach it when the GitHub
   repo `ShaharShokrani/flick` is connected to the project, or when
-  `VERCEL_TOKEN` + `VERCEL_ORG_ID` are set (`npm run deploy`,
-  `.githooks/pre-push`, `.github/workflows/deploy.yml`).
+  `VERCEL_TOKEN` + `VERCEL_ORG_ID` are set (`npm run deploy` /
+  `.githooks/pre-push`).
 - New cards are due today. `--known` on upload schedules the first
   review for tomorrow.
 

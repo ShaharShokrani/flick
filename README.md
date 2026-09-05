@@ -44,10 +44,8 @@ That project is claimed on Vercel. To publish every new commit to it,
 connect this GitHub repo in the Vercel dashboard: the project →
 **Settings → Git → Connect Repository → `ShaharShokrani/flick`**.
 
-Or add repo secrets `VERCEL_TOKEN` and `VERCEL_ORG_ID` (optional
-`VERCEL_PROJECT_ID`, default `prj_RtcpA91DNOvaP7WLfx1DO9Z4K4UV`). Then
-`git push` runs `.github/workflows/deploy.yml`, and `npm run deploy`
-works locally. Do not commit Vercel tokens.
+Or set `VERCEL_TOKEN` and `VERCEL_ORG_ID` and run `npm run deploy`.
+Do not commit Vercel tokens.
 
 On the public site, cards stay in the phone’s browser. The `data/cards.json` API is for when you run Flick on your own computer.
 

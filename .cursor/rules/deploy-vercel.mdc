@@ -12,6 +12,6 @@ longer works.
 - Prefer the GitHub repo `ShaharShokrani/flick` connected to that project
   in the Vercel dashboard (Settings → Git). Then `git push` publishes it.
 - Or set `VERCEL_TOKEN` and `VERCEL_ORG_ID` and run `npm run deploy`.
-  `.githooks/pre-push` and `.github/workflows/deploy.yml` use the same script.
+  `.githooks/pre-push` uses the same script.
 - Do not commit `.vercel/anonymous.json` or Vercel tokens.
 - Set `SKIP_DEPLOY=1` only when a push must skip the deploy attempt.
