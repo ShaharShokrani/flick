@@ -1,0 +1,13 @@
+---
+description: Deploy every commit to the public Flick URL
+alwaysApply: true
+---
+
+After committing and pushing Flick changes, they must appear on
+https://temporary-brisk-mesa-ty777ur.vercel.app/
+
+- `git push` runs `.githooks/pre-push`, which deploys with `npm run deploy`
+  (`vercel deploy --yes --prod --temporary`) using `.vercel/anonymous.json`.
+- If you commit without pushing, run `npm run deploy` before you finish.
+- Do not commit `.vercel/anonymous.json` or Vercel tokens.
+- Set `SKIP_DEPLOY=1` only when a push must skip the live site.

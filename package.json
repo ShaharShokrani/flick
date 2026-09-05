@@ -10,6 +10,7 @@
     "memory:update": "node scripts/update-memory.mjs",
     "memory:check": "node scripts/update-memory.mjs --check",
     "add-word": "node scripts/add-word.mjs",
+    "deploy": "node scripts/deploy.mjs",
     "prepare": "node scripts/install-hooks.mjs"
   },
   "dependencies": {

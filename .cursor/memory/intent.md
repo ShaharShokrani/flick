@@ -25,7 +25,10 @@ phone browser keeps the deck in `localStorage` only.
 - Tap flips the card. Swipe right is Yes, swipe left is No. Space /
   Enter flips. `Y` / `N` also answer. Desktop still has Yes/No buttons.
 - The app is a PWA (`app/manifest.ts`) so Android Chrome can Add to
-  Home screen and run it fullscreen. Public deploys are Vercel.
+  Home screen and run it fullscreen.
+- Public site: https://temporary-brisk-mesa-ty777ur.vercel.app/
+  Every `git push` runs `npm run deploy` from `.githooks/pre-push`
+  (`vercel deploy --temporary`) so new commits show on that URL.
 - New cards are due today. `--known` on upload schedules the first
   review for tomorrow.
 

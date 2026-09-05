@@ -38,6 +38,12 @@ Deploy the GitHub repo to Vercel (one click):
 
 Then open the `https://….vercel.app` link in Chrome on your phone → menu → **Add to Home screen**.
 
+New commits auto-deploy on `git push` to
+https://temporary-brisk-mesa-ty777ur.vercel.app/
+via `npm run deploy`. You can also run that command by hand.
+Do not commit Vercel tokens. Claim the temporary deployment on Vercel
+if you want that URL to stay up after the anonymous session expires.
+
 On the public site, cards stay in the phone’s browser. The `data/cards.json` API is for when you run Flick on your own computer.
 
 ## Add a word as an agent

@@ -1,8 +1,10 @@
 #!/usr/bin/env sh
 set -e
 
-if [ "${SKIP_MEMORY}" = "1" ]; then
-  exit 0
+if [ "${SKIP_MEMORY}" != "1" ]; then
+  node scripts/update-memory.mjs --check
 fi
 
-node scripts/update-memory.mjs --check
+if [ "${SKIP_DEPLOY}" != "1" ]; then
+  node scripts/deploy.mjs || echo "Vercel deploy failed; push continues."
+fi
