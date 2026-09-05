@@ -9,7 +9,11 @@ A browser flashcard app. The user adds a word, the English translation,
 and an optional example, then reviews unread cards.
 
 Words for signed-in users live in cloud Postgres (`DATABASE_URL`),
-not on the phone or computer. Sign in with Google, email, or guest.
+not on the phone or computer. `DATABASE_URL` must be a direct
+`postgres://` string; a `prisma+postgres://` Accelerate URL is rejected
+because only Prisma's client can open it. `GET /api/health/db` reports
+whether a deployment can reach its database.
+Sign in with Google, email, or guest.
 Guest gets an 8-character code (`XXXX-XXXX`). Unsigned-in visitors
 see sample cards only. Localhost `data/cards.json` is still used by
 the agent upload API when nobody is signed in.

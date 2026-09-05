@@ -40,6 +40,21 @@ Words are saved in cloud Postgres (`DATABASE_URL` on Vercel).
 
 Set `DATABASE_URL`, `BETTER_AUTH_SECRET`, and `BETTER_AUTH_URL` in Vercel. Optional Google redirect: `{BETTER_AUTH_URL}/api/auth/callback/google`.
 
+`DATABASE_URL` must be a direct Postgres connection string:
+
+```
+postgres://USER:PASSWORD@HOST:5432/postgres?sslmode=require
+```
+
+Prisma also shows a `prisma+postgres://accelerate.prisma-data.net/?api_key=…`
+URL. That one speaks HTTP to Accelerate and only Prisma's own client can
+open it, so this app rejects it. In the Prisma Console, open the database
+and copy the string for any Postgres client instead.
+
+`GET /api/health/db` reports whether a deployment can reach its database,
+which host it dialed, and how long the connection took. It never returns
+credentials.
+
 ## Use it from anywhere
 
 Deploy the GitHub repo to Vercel (one click):
