@@ -5,22 +5,12 @@ import { BookOpen, RotateCcw } from "lucide-react";
 
 import { AddCardDialog } from "@/components/add-card-dialog";
 import { CardList } from "@/components/card-list";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useDeck } from "@/lib/deck-context";
+import { cn } from "@/lib/utils";
 
 export function HomeView() {
-  const { ready, cards, toLearn, knownCount, resetKnown } = useDeck();
-
-  if (!ready) {
-    return (
-      <div className="grid gap-4">
-        <div className="h-40 animate-pulse rounded-2xl bg-card/80 ring-1 ring-foreground/5" />
-        <div className="h-24 animate-pulse rounded-2xl bg-card/80 ring-1 ring-foreground/5" />
-        <div className="h-24 animate-pulse rounded-2xl bg-card/80 ring-1 ring-foreground/5" />
-      </div>
-    );
-  }
-
+  const { cards, toLearn, knownCount, resetKnown } = useDeck();
   const canLearn = toLearn.length > 0;
   const allKnown = cards.length > 0 && toLearn.length === 0;
 
@@ -47,14 +37,13 @@ export function HomeView() {
 
         <div className="mt-5 flex flex-col gap-2 sm:flex-row">
           {canLearn ? (
-            <Button
-              nativeButton={false}
-              render={<Link href="/learn" />}
-              className="h-10 flex-1"
+            <Link
+              href="/learn"
+              className={cn(buttonVariants(), "h-10 flex-1")}
             >
               <BookOpen data-icon="inline-start" />
               Start learning
-            </Button>
+            </Link>
           ) : (
             <Button className="h-10 flex-1" disabled>
               <BookOpen data-icon="inline-start" />

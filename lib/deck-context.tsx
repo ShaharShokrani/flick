@@ -23,7 +23,6 @@ type AddCardInput = {
 };
 
 type DeckContextValue = {
-  ready: boolean;
   cards: Flashcard[];
   toLearn: Flashcard[];
   knownCount: number;
@@ -41,19 +40,13 @@ export function DeckProvider({ children }: { children: ReactNode }) {
     getClientSnapshot,
     getServerSnapshot
   );
-  const ready = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
 
   const value = useMemo<DeckContextValue>(() => {
     const toLearn = cards.filter((card) => !card.known);
     return {
-      ready,
-      cards: ready ? cards : [],
-      toLearn: ready ? toLearn : [],
-      knownCount: ready ? cards.length - toLearn.length : 0,
+      cards,
+      toLearn,
+      knownCount: cards.length - toLearn.length,
       addCard: ({ word, translation, example }) => {
         const next: Flashcard = {
           id: crypto.randomUUID(),
@@ -81,7 +74,7 @@ export function DeckProvider({ children }: { children: ReactNode }) {
         );
       },
     };
-  }, [cards, ready]);
+  }, [cards]);
 
   return <DeckContext.Provider value={value}>{children}</DeckContext.Provider>;
 }

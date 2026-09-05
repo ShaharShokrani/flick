@@ -1,7 +1,5 @@
-import { loadCards, saveCards } from "@/lib/storage";
+import { loadCards, SAMPLE_CARDS, saveCards } from "@/lib/storage";
 import type { Flashcard } from "@/lib/types";
-
-const EMPTY: Flashcard[] = [];
 let state: Flashcard[] | null = null;
 const listeners = new Set<() => void>();
 
@@ -26,7 +24,7 @@ export function getClientSnapshot() {
 }
 
 export function getServerSnapshot() {
-  return EMPTY;
+  return SAMPLE_CARDS;
 }
 
 export function updateCards(updater: (cards: Flashcard[]) => Flashcard[]) {

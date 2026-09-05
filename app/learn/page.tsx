@@ -6,9 +6,11 @@ import { ArrowLeft, Check, RotateCcw, X } from "lucide-react";
 
 import { Flashcard } from "@/components/flashcard";
 import { SiteHeader } from "@/components/site-header";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useDeck } from "@/lib/deck-context";
 import type { Flashcard as FlashcardType } from "@/lib/types";
+import { useHasMounted } from "@/lib/use-has-mounted";
 
 function shuffle<T>(items: T[]) {
   const next = [...items];
@@ -20,7 +22,8 @@ function shuffle<T>(items: T[]) {
 }
 
 export default function LearnPage() {
-  const { ready, toLearn, markKnown } = useDeck();
+  const mounted = useHasMounted();
+  const { toLearn, markKnown } = useDeck();
   const [session, setSession] = useState(0);
   const [activeSession, setActiveSession] = useState<number | null>(null);
   const [queue, setQueue] = useState<FlashcardType[] | null>(null);
@@ -29,7 +32,7 @@ export default function LearnPage() {
   const [knownThisSession, setKnownThisSession] = useState(0);
   const [skippedThisSession, setSkippedThisSession] = useState(0);
 
-  if (ready && activeSession !== session) {
+  if (mounted && activeSession !== session) {
     setActiveSession(session);
     setQueue(shuffle(toLearn));
     setStartingCount(toLearn.length);
@@ -94,15 +97,13 @@ export default function LearnPage() {
       <SiteHeader />
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-10 sm:px-0">
         <div className="mb-5 flex items-center justify-between gap-3">
-          <Button
-            nativeButton={false}
-            variant="ghost"
-            render={<Link href="/" />}
-            className="-ml-2"
+          <Link
+            href="/"
+            className={cn(buttonVariants({ variant: "ghost" }), "-ml-2")}
           >
             <ArrowLeft data-icon="inline-start" />
             Deck
-          </Button>
+          </Link>
           {queue && !finished ? (
             <p className="text-sm text-muted-foreground">
               {remaining} left
@@ -110,7 +111,7 @@ export default function LearnPage() {
           ) : null}
         </div>
 
-        {!ready || queue === null ? (
+        {queue === null ? (
           <div className="h-80 animate-pulse rounded-[1.75rem] bg-card ring-1 ring-foreground/5" />
         ) : finished ? (
           <SessionDone
@@ -224,10 +225,10 @@ function SessionDone({
       ) : null}
 
       <div className="mt-8 flex flex-col items-center gap-2">
-        <Button nativeButton={false} render={<Link href="/" />} className="h-10">
+        <Link href="/" className={cn(buttonVariants(), "h-10")}>
           <ArrowLeft data-icon="inline-start" />
           Back to deck
-        </Button>
+        </Link>
         {!empty && skippedThisSession > 0 ? (
           <Button variant="ghost" className="h-10" onClick={onRestart}>
             <RotateCcw data-icon="inline-start" />

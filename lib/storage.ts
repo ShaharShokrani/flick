@@ -2,7 +2,7 @@ import type { Flashcard } from "@/lib/types";
 
 export const STORAGE_KEY = "flick-cards-v1";
 
-const SAMPLE_CARDS: Flashcard[] = [
+export const SAMPLE_CARDS: Flashcard[] = [
   {
     id: "sample-bonjour",
     word: "bonjour",

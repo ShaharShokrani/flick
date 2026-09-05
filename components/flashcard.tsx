@@ -28,7 +28,10 @@ export function Flashcard({ card, flipped, onFlip }: FlashcardProps) {
           flipped && "[transform:rotateY(180deg)]"
         )}
       >
-        <div className="absolute inset-0 flex flex-col justify-between rounded-[1.75rem] bg-card px-6 py-7 shadow-[0_18px_50px_-24px_rgba(62,36,16,0.45)] ring-1 ring-foreground/10 [backface-visibility:hidden]">
+        <div
+          aria-hidden={flipped}
+          className="absolute inset-0 flex flex-col justify-between rounded-[1.75rem] bg-card px-6 py-7 shadow-[0_18px_50px_-24px_rgba(62,36,16,0.45)] ring-1 ring-foreground/10 [backface-visibility:hidden]"
+        >
           <p className="text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
             Word
           </p>
@@ -40,7 +43,10 @@ export function Flashcard({ card, flipped, onFlip }: FlashcardProps) {
           </p>
         </div>
 
-        <div className="absolute inset-0 flex flex-col justify-between rounded-[1.75rem] bg-[oklch(0.35_0.04_55)] px-6 py-7 text-[oklch(0.97_0.01_85)] shadow-[0_18px_50px_-24px_rgba(62,36,16,0.45)] [backface-visibility:hidden] [transform:rotateY(180deg)]">
+        <div
+          aria-hidden={!flipped}
+          className="absolute inset-0 flex flex-col justify-between rounded-[1.75rem] bg-[oklch(0.35_0.04_55)] px-6 py-7 text-[oklch(0.97_0.01_85)] shadow-[0_18px_50px_-24px_rgba(62,36,16,0.45)] [backface-visibility:hidden] [transform:rotateY(180deg)]"
+        >
           <p className="text-[11px] font-medium tracking-[0.18em] text-white/60 uppercase">
             English
           </p>
