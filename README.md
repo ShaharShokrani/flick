@@ -1,6 +1,6 @@
 # Flick
 
-A tiny flashcard app. Add a word, the English translation, and an optional example. Then flip through your deck and tap **Yes** or **No**.
+A tiny flashcard app for the web and Android. Add a word, the English translation, and an optional example. Then flip through your deck and **swipe right for Yes**, **swipe left for No**.
 
 - **Yes** — you know it. The next review waits longer: 1 day, then 3, then 7, then further apart.
 - **No** — you do not know it. It leaves this session and comes back tomorrow.
@@ -26,9 +26,13 @@ npm start
 
 1. Add words from the home screen.
 2. Start learning. Only cards due today are shown. Each card starts from the word or the English at random — tap to see the other side and the example.
-3. Choose Yes or No. Yes schedules a later day. No comes back tomorrow.
+3. Tap to flip. Swipe right if you know it, left if you do not. Yes schedules a later day. No comes back tomorrow.
 
 The first visit includes a few sample words so you can try the flow immediately.
+
+## Android
+
+Open the site in Chrome, then menu → **Add to Home screen**. Flick installs as a standalone app. Learning is swipe-first: right = Yes, left = No.
 
 ## Add a word as an agent
 

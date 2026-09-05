@@ -18,7 +18,7 @@ const outputPath = join(memoryDir, "codebase.md");
 const intentPath = join(memoryDir, "intent.md");
 const checkOnly = process.argv.includes("--check");
 
-const SOURCE_ROOTS = ["app", "components", "lib", "scripts"];
+const SOURCE_ROOTS = ["app", "components", "hooks", "lib", "scripts"];
 const SOURCE_EXT = new Set([".ts", ".tsx", ".js", ".mjs", ".css"]);
 const IGNORE_DIRS = new Set([
   "node_modules",

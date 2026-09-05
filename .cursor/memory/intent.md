@@ -22,7 +22,10 @@ API so agent uploads show up without a refresh.
   7, then `round(interval * ease)`. The card is due on that later day.
 - **No** (`reviewCard(card, false)`): interval resets to 1 day, ease
   drops a little, and the card is due tomorrow — not again this session.
-- Space / Enter flips. `Y` / `N` answer after a flip.
+- Tap flips the card. Swipe right is Yes, swipe left is No. Space /
+  Enter flips. `Y` / `N` also answer. Desktop still has Yes/No buttons.
+- The app is a PWA (`app/manifest.ts`) so Android Chrome can Add to
+  Home screen and run it fullscreen.
 - New cards are due today. `--known` on upload schedules the first
   review for tomorrow.
 

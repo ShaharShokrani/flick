@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BookOpen, RotateCcw } from "lucide-react";
 
 import { AddCardDialog } from "@/components/add-card-dialog";
+import { AndroidInstallHint } from "@/components/android-install-hint";
 import { CardList } from "@/components/card-list";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useDeck } from "@/lib/deck-context";
@@ -28,11 +29,11 @@ export function HomeView() {
           Your deck
         </p>
         <h1 className="mt-2 font-serif text-3xl tracking-tight text-balance">
-          See a word or the English. Say if you know it.
+          See a word or the English. Swipe if you know it.
         </h1>
         <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-          Each day only shows cards that are due. Yes waits a little longer
-          next time. No brings the card back tomorrow.
+          Each day only shows cards that are due. Swipe right for Yes, left for
+          No. Yes waits longer next time. No comes back tomorrow.
         </p>
 
         <dl className="mt-5 grid grid-cols-3 gap-2 text-center">
@@ -57,6 +58,9 @@ export function HomeView() {
             </Button>
           )}
           <AddCardDialog triggerClassName="h-10 flex-1" />
+        </div>
+        <div className="mt-4">
+          <AndroidInstallHint />
         </div>
 
         {doneForToday ? (

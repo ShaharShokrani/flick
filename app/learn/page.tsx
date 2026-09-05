@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, X } from "lucide-react";
 
-import { Flashcard, type PromptSide } from "@/components/flashcard";
+import { Flashcard, SwipeHints, type PromptSide } from "@/components/flashcard";
 import { SiteHeader } from "@/components/site-header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -93,9 +93,6 @@ export default function LearnPage() {
         event.preventDefault();
         setFlipped((value) => !value);
       }
-      if (!flipped) {
-        return;
-      }
       if (event.key === "y" || event.key === "Y") {
         handleYes();
       }
@@ -109,9 +106,9 @@ export default function LearnPage() {
   });
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex min-h-full flex-col overscroll-x-none">
       <SiteHeader />
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-10 sm:px-0">
+      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] sm:px-0">
         <div className="mb-5 flex items-center justify-between gap-3">
           <Link
             href="/"
@@ -158,21 +155,22 @@ export default function LearnPage() {
               prompt={current.prompt}
               flipped={flipped}
               onFlip={() => setFlipped((value) => !value)}
+              onSwipeLeft={handleNo}
+              onSwipeRight={handleYes}
             />
 
-            <div className="grid grid-cols-2 gap-3">
+            <SwipeHints />
+            <div className="hidden grid-cols-2 gap-3 sm:grid">
               <Button
                 variant="outline"
-                className="h-14 rounded-2xl border-rose-200 bg-rose-50 text-rose-950 hover:bg-rose-100 hover:text-rose-950"
-                disabled={!flipped}
+                className="h-12 rounded-2xl border-rose-200 bg-rose-50 text-rose-950 hover:bg-rose-100 hover:text-rose-950"
                 onClick={handleNo}
               >
                 <X data-icon="inline-start" />
                 No
               </Button>
               <Button
-                className="h-14 rounded-2xl bg-emerald-700 text-white hover:bg-emerald-700/90"
-                disabled={!flipped}
+                className="h-12 rounded-2xl bg-emerald-700 text-white hover:bg-emerald-700/90"
                 onClick={handleYes}
               >
                 <Check data-icon="inline-start" />
@@ -180,9 +178,7 @@ export default function LearnPage() {
               </Button>
             </div>
             <p className="text-center text-sm text-muted-foreground">
-              {flipped
-                ? "Yes sees it again later. No brings it back tomorrow."
-                : "Flip the card first, then choose Yes or No."}
+              Tap to flip. Swipe right if you know it, left if you do not.
             </p>
           </div>
         ) : null}

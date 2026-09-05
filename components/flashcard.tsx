@@ -1,5 +1,8 @@
 "use client";
 
+import { Check, X } from "lucide-react";
+
+import { useCardSwipe } from "@/hooks/use-card-swipe";
 import type { Flashcard as FlashcardType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -10,9 +13,18 @@ type FlashcardProps = {
   prompt: PromptSide;
   flipped: boolean;
   onFlip: () => void;
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
 };
 
-export function Flashcard({ card, prompt, flipped, onFlip }: FlashcardProps) {
+export function Flashcard({
+  card,
+  prompt,
+  flipped,
+  onFlip,
+  onSwipeLeft,
+  onSwipeRight,
+}: FlashcardProps) {
   const startsFromEnglish = prompt === "english";
   const frontLabel = startsFromEnglish ? "English" : "Word";
   const frontText = startsFromEnglish ? card.translation : card.word;
@@ -22,19 +34,48 @@ export function Flashcard({ card, prompt, flipped, onFlip }: FlashcardProps) {
     ? "Tap to see the word"
     : "Tap to see the English";
 
+  const swipe = useCardSwipe({
+    onTap: onFlip,
+    onSwipe: (direction) => {
+      if (direction === "right") {
+        onSwipeRight?.();
+        return;
+      }
+      onSwipeLeft?.();
+    },
+  });
+
+  const rotation = swipe.offset / 22;
+  const yesOpacity = Math.min(1, Math.max(0, swipe.offset / 96));
+  const noOpacity = Math.min(1, Math.max(0, -swipe.offset / 96));
+
   return (
-    <button
-      type="button"
-      onClick={onFlip}
+    <div
+      role="button"
+      tabIndex={0}
       aria-pressed={flipped}
-      className="group block w-full text-left [perspective:1400px]"
+      aria-label={flipped ? `Hide the ${backLabel.toLowerCase()}` : tapHint}
+      className="relative block w-full touch-none select-none text-left outline-none [perspective:1400px]"
+      style={{
+        transform: `translateX(${swipe.offset}px) rotate(${rotation}deg)`,
+        transition: swipe.leaving
+          ? "transform 220ms ease-out"
+          : swipe.offset === 0
+            ? "transform 180ms ease-out"
+            : "none",
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onFlip();
+        }
+      }}
+      {...swipe.bind}
     >
-      <span className="sr-only">
-        {flipped ? `Hide the ${backLabel.toLowerCase()}` : tapHint}
-      </span>
       <div
         className={cn(
-          "relative min-h-[280px] w-full transition-transform duration-500 [transform-style:preserve-3d] sm:min-h-[320px]",
+          "relative min-h-[300px] w-full [transform-style:preserve-3d] sm:min-h-[340px]",
+          !swipe.leaving && "transition-transform duration-500",
           flipped && "[transform:rotateY(180deg)]"
         )}
       >
@@ -70,9 +111,42 @@ export function Flashcard({ card, prompt, flipped, onFlip }: FlashcardProps) {
               <p className="text-sm text-white/50">No example saved</p>
             )}
           </div>
-          <p className="text-sm text-white/55">Do you know this word?</p>
+          <p className="text-sm text-white/55">Swipe right for Yes, left for No</p>
         </div>
       </div>
-    </button>
+
+      <div
+        className="pointer-events-none absolute inset-4 flex items-start justify-between"
+        aria-hidden
+      >
+        <span
+          className="rounded-lg border-2 border-rose-500 px-2.5 py-1 text-sm font-semibold tracking-wide text-rose-600 uppercase"
+          style={{ opacity: noOpacity }}
+        >
+          No
+        </span>
+        <span
+          className="rounded-lg border-2 border-emerald-600 px-2.5 py-1 text-sm font-semibold tracking-wide text-emerald-700 uppercase"
+          style={{ opacity: yesOpacity }}
+        >
+          Yes
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export function SwipeHints() {
+  return (
+    <div className="grid grid-cols-2 gap-3 text-sm">
+      <p className="flex items-center justify-center gap-1.5 rounded-2xl bg-rose-50 px-3 py-3 text-rose-900 ring-1 ring-rose-200">
+        <X className="size-4" />
+        Swipe left · No
+      </p>
+      <p className="flex items-center justify-center gap-1.5 rounded-2xl bg-emerald-50 px-3 py-3 text-emerald-900 ring-1 ring-emerald-200">
+        <Check className="size-4" />
+        Swipe right · Yes
+      </p>
+    </div>
   );
 }

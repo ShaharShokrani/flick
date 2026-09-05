@@ -5,7 +5,7 @@ export default function HomePage() {
   return (
     <div className="flex min-h-full flex-col">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-xl flex-1 px-4 pb-16 sm:px-0">
+      <main className="mx-auto w-full max-w-xl flex-1 px-4 pb-[max(4rem,env(safe-area-inset-bottom))] sm:px-0">
         <HomeView />
       </main>
     </div>
