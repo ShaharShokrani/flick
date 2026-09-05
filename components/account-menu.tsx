@@ -25,6 +25,15 @@ export function AccountMenu() {
   const [features, setFeatures] = useState<Features | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [sessionSlow, setSessionSlow] = useState(false);
+
+  useEffect(() => {
+    if (!isPending) {
+      return;
+    }
+    const timer = window.setTimeout(() => setSessionSlow(true), 3000);
+    return () => window.clearTimeout(timer);
+  }, [isPending]);
 
   useEffect(() => {
     void fetch("/api/auth/features", { cache: "no-store" })
@@ -45,7 +54,7 @@ export function AccountMenu() {
       : null;
   const guest = Boolean(user && isGuestEmail(user.email));
 
-  if (isPending) {
+  if (isPending && !sessionSlow) {
     return (
       <span className="text-xs text-muted-foreground" aria-hidden>
         …

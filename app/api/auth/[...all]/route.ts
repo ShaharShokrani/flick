@@ -17,7 +17,15 @@ async function handler(request: Request) {
       503
     );
   }
-  await ensureDb();
+  try {
+    await ensureDb();
+  } catch {
+    return json(
+      { error: "The words database is unreachable. Check DATABASE_URL." },
+      503
+    );
+  }
+
   const auth = getAuth();
   if (!auth) {
     return json({ error: "Sign-in is not configured." }, 503);

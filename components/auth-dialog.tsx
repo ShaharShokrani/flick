@@ -28,6 +28,15 @@ type AuthDialogProps = {
 
 type Mode = "choose" | "email" | "code" | "guest-ready";
 
+type AuthError = { status?: number; message?: string } | null | undefined;
+
+function describeError(error: AuthError, fallback: string) {
+  if (error?.status === 503) {
+    return "Sign-in is offline: the words database is unreachable right now.";
+  }
+  return error?.message || fallback;
+}
+
 export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
   const [mode, setMode] = useState<Mode>("choose");
   const [email, setEmail] = useState("");
@@ -57,7 +66,7 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
       callbackURL: "/",
     });
     if (result.error) {
-      setError(result.error.message ?? "Google sign-in failed.");
+      setError(describeError(result.error, "Google sign-in failed."));
       setBusy(false);
     }
   }
@@ -78,7 +87,7 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
         });
     setBusy(false);
     if (result.error) {
-      setError(result.error.message ?? "Could not sign in with email.");
+      setError(describeError(result.error, "Could not sign in with email."));
       return;
     }
     onOpenChange(false);
@@ -96,7 +105,7 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
     });
     setBusy(false);
     if (result.error) {
-      setError(result.error.message ?? "Could not start a guest session.");
+      setError(describeError(result.error, "Could not start a guest session."));
       return;
     }
     setGuestCode(nextCode);
@@ -118,7 +127,7 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
     });
     setBusy(false);
     if (result.error) {
-      setError("That guest code was not found.");
+      setError(describeError(result.error, "That guest code was not found."));
       return;
     }
     onOpenChange(false);

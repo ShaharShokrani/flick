@@ -4,6 +4,14 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { schema } from "@/lib/db/schema";
 import { SCHEMA_SQL } from "@/lib/db/sql";
 
+export class DatabaseUnavailableError extends Error {
+  constructor(cause?: unknown) {
+    super("The words database is unreachable.");
+    this.name = "DatabaseUnavailableError";
+    this.cause = cause;
+  }
+}
+
 export function hasRemoteDatabase() {
   return Boolean(process.env.DATABASE_URL);
 }
@@ -26,7 +34,7 @@ export function getDb() {
 
 export async function ensureDb() {
   if (!process.env.DATABASE_URL) {
-    throw new Error("No cloud database is configured.");
+    throw new DatabaseUnavailableError("DATABASE_URL is not set.");
   }
 
   if (!sql) {
@@ -34,6 +42,10 @@ export async function ensureDb() {
       max: 1,
       ssl: "require",
       prepare: false,
+      // Serverless requests should surface a bad database faster than
+      // the platform's own request timeout.
+      connect_timeout: 10,
+      idle_timeout: 20,
     });
     db = drizzle(sql, { schema });
   }
@@ -42,8 +54,18 @@ export async function ensureDb() {
     const statements = SCHEMA_SQL.split(";")
       .map((statement) => statement.trim())
       .filter(Boolean);
-    for (const statement of statements) {
-      await sql.unsafe(statement);
+    try {
+      for (const statement of statements) {
+        await sql.unsafe(statement);
+      }
+    } catch (error) {
+      // A half-open pool would keep failing, so drop it and let the next
+      // request build a fresh one.
+      const broken = sql;
+      sql = null;
+      db = null;
+      void broken.end({ timeout: 2 }).catch(() => {});
+      throw new DatabaseUnavailableError(error);
     }
     migrated = true;
   }

@@ -9,7 +9,7 @@ import {
 import { json, API_HEADERS } from "@/lib/api";
 import { isAuthConfigured } from "@/lib/auth";
 import { parseAddCardInput, parseEditCardInput } from "@/lib/card-model";
-import { ensureDb, canUseDatabase } from "@/lib/db";
+import { ensureDb, canUseDatabase, DatabaseUnavailableError } from "@/lib/db";
 import { dueCards } from "@/lib/schedule";
 import { getCurrentUser } from "@/lib/session";
 import {
@@ -28,6 +28,20 @@ export const runtime = "nodejs";
 
 export function OPTIONS() {
   return new Response(null, { status: 204, headers: API_HEADERS });
+}
+
+async function respond(run: () => Promise<Response>) {
+  try {
+    return await run();
+  } catch (error) {
+    if (error instanceof DatabaseUnavailableError) {
+      return json(
+        { error: "The words database is unreachable. Check DATABASE_URL." },
+        503
+      );
+    }
+    throw error;
+  }
 }
 
 function isLocalHost(request: Request) {
@@ -67,7 +81,7 @@ function filterCards(cards: Flashcard[], request: Request) {
   return cards;
 }
 
-export async function GET(request: Request) {
+async function handleGet(request: Request) {
   const deck = await loadDeck(request);
   if (!deck.cards) {
     return json({ cards: [], local: true });
@@ -75,7 +89,7 @@ export async function GET(request: Request) {
   return json({ cards: filterCards(deck.cards, request), userId: deck.userId });
 }
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   const body = await readBody(request);
   const record = body && typeof body === "object" ? (body as Record<string, unknown>) : null;
 
@@ -120,7 +134,7 @@ export async function POST(request: Request) {
   return json({ card, cards, created }, created ? 201 : 200);
 }
 
-export async function PATCH(request: Request) {
+async function handlePatch(request: Request) {
   const body = (await readBody(request)) as Record<string, unknown> | null;
   if (!body) {
     return json({ error: "Expected a JSON body." }, 400);
@@ -224,7 +238,7 @@ export async function PATCH(request: Request) {
   return json(updated);
 }
 
-export async function DELETE(request: Request) {
+async function handleDelete(request: Request) {
   const id = new URL(request.url).searchParams.get("id");
   if (!id) {
     return json({ error: "Pass ?id= to delete a card." }, 400);
@@ -243,6 +257,22 @@ export async function DELETE(request: Request) {
   const cards = readDeck().filter((card) => card.id !== id);
   writeDeck(cards);
   return json({ cards });
+}
+
+export function GET(request: Request) {
+  return respond(() => handleGet(request));
+}
+
+export function POST(request: Request) {
+  return respond(() => handlePost(request));
+}
+
+export function PATCH(request: Request) {
+  return respond(() => handlePatch(request));
+}
+
+export function DELETE(request: Request) {
+  return respond(() => handleDelete(request));
 }
 
 async function readBody(request: Request): Promise<unknown> {
