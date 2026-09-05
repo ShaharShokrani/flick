@@ -41,7 +41,7 @@ export function AddCardDialog({
     setError("");
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextWord = word.trim();
     const nextTranslation = translation.trim();
@@ -51,13 +51,17 @@ export function AddCardDialog({
       return;
     }
 
-    addCard({
-      word: nextWord,
-      translation: nextTranslation,
-      example: example.trim(),
-    });
-    resetForm();
-    setOpen(false);
+    try {
+      await addCard({
+        word: nextWord,
+        translation: nextTranslation,
+        example: example.trim(),
+      });
+      resetForm();
+      setOpen(false);
+    } catch {
+      setError("Could not save that card. Try again.");
+    }
   }
 
   return (

@@ -111,15 +111,16 @@ function extractRoutes() {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, entry.name);
       if (entry.isDirectory()) {
-        if (entry.name === "api") {
-          continue;
-        }
         visit(full, [...urlParts, entry.name]);
         continue;
       }
       if (entry.name === "page.tsx" || entry.name === "page.ts") {
         const path = urlParts.length === 0 ? "/" : `/${urlParts.join("/")}`;
         routes.push(path);
+      }
+      if (entry.name === "route.ts" || entry.name === "route.js") {
+        const path = urlParts.length === 0 ? "/" : `/${urlParts.join("/")}`;
+        routes.push(`API ${path}`);
       }
     }
   }

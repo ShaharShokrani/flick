@@ -9,10 +9,13 @@ import {
 } from "react";
 
 import {
+  addCard as addCardToStore,
+  deleteCard as deleteCardFromStore,
   getClientSnapshot,
   getServerSnapshot,
+  markKnown as markKnownInStore,
+  resetKnown as resetKnownInStore,
   subscribe,
-  updateCards,
 } from "@/lib/deck-store";
 import type { Flashcard } from "@/lib/types";
 
@@ -20,16 +23,17 @@ type AddCardInput = {
   word: string;
   translation: string;
   example: string;
+  known?: boolean;
 };
 
 type DeckContextValue = {
   cards: Flashcard[];
   toLearn: Flashcard[];
   knownCount: number;
-  addCard: (input: AddCardInput) => void;
-  deleteCard: (id: string) => void;
-  markKnown: (id: string) => void;
-  resetKnown: () => void;
+  addCard: (input: AddCardInput) => Promise<void>;
+  deleteCard: (id: string) => Promise<void>;
+  markKnown: (id: string) => Promise<void>;
+  resetKnown: () => Promise<void>;
 };
 
 const DeckContext = createContext<DeckContextValue | null>(null);
@@ -47,31 +51,17 @@ export function DeckProvider({ children }: { children: ReactNode }) {
       cards,
       toLearn,
       knownCount: cards.length - toLearn.length,
-      addCard: ({ word, translation, example }) => {
-        const next: Flashcard = {
-          id: crypto.randomUUID(),
-          word: word.trim(),
-          translation: translation.trim(),
-          example: example.trim(),
-          known: false,
-          createdAt: Date.now(),
-        };
-        updateCards((current) => [next, ...current]);
+      addCard: async (input) => {
+        await addCardToStore(input);
       },
-      deleteCard: (id) => {
-        updateCards((current) => current.filter((card) => card.id !== id));
+      deleteCard: async (id) => {
+        await deleteCardFromStore(id);
       },
-      markKnown: (id) => {
-        updateCards((current) =>
-          current.map((card) =>
-            card.id === id ? { ...card, known: true } : card
-          )
-        );
+      markKnown: async (id) => {
+        await markKnownInStore(id);
       },
-      resetKnown: () => {
-        updateCards((current) =>
-          current.map((card) => ({ ...card, known: false }))
-        );
+      resetKnown: async () => {
+        await resetKnownInStore();
       },
     };
   }, [cards]);

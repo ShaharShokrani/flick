@@ -8,8 +8,9 @@ copies it into the generated snapshot.
 A browser flashcard app. The user adds a word, the English translation,
 and an optional example, then reviews unread cards.
 
-There is no account, database, or API. The deck lives in `localStorage`
-under `flick-cards-v1`.
+There is no account. The local user's deck is `data/cards.json`, exposed
+at `/api/cards`. The browser keeps a `localStorage` cache and polls the
+API so agent uploads show up without a refresh.
 
 ## Learning rules
 
@@ -31,3 +32,11 @@ port `43147`.
 
 - `/` — deck stats, add/delete cards, start learning
 - `/learn` — one-pass Yes/No session
+- `POST /api/cards` — agent or CLI upload of a word
+- `GET /api/cards?learned=1` — words the local user already knows
+
+## Agent upload
+
+When a word is learned with the local user, add it with
+`npm run add-word -- --word <word> --translation <english> --example <sentence> --known`.
+The same word is upserted. `--known` marks it already learned.

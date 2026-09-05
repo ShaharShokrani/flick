@@ -1,41 +1,10 @@
+import { isFlashcard, SAMPLE_CARDS } from "@/lib/card-model";
 import type { Flashcard } from "@/lib/types";
 
 export const STORAGE_KEY = "flick-cards-v1";
+export const MIGRATED_KEY = "flick-migrated-to-file-v1";
 
-export const SAMPLE_CARDS: Flashcard[] = [
-  {
-    id: "sample-bonjour",
-    word: "bonjour",
-    translation: "hello",
-    example: "Bonjour, comment ça va ?",
-    known: false,
-    createdAt: 1,
-  },
-  {
-    id: "sample-gato",
-    word: "gato",
-    translation: "cat",
-    example: "El gato duerme en el sofá.",
-    known: false,
-    createdAt: 2,
-  },
-  {
-    id: "sample-danke",
-    word: "danke",
-    translation: "thank you",
-    example: "Danke für deine Hilfe.",
-    known: false,
-    createdAt: 3,
-  },
-  {
-    id: "sample-acqua",
-    word: "acqua",
-    translation: "water",
-    example: "Vorrei un bicchiere d'acqua.",
-    known: false,
-    createdAt: 4,
-  },
-];
+export { SAMPLE_CARDS };
 
 export function loadCards(): Flashcard[] {
   if (typeof window === "undefined") {
@@ -60,21 +29,16 @@ export function loadCards(): Flashcard[] {
 }
 
 export function saveCards(cards: Flashcard[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
 }
 
-function isFlashcard(value: unknown): value is Flashcard {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
+export function hasMigratedLocalDeck() {
+  return window.localStorage.getItem(MIGRATED_KEY) === "1";
+}
 
-  const card = value as Record<string, unknown>;
-  return (
-    typeof card.id === "string" &&
-    typeof card.word === "string" &&
-    typeof card.translation === "string" &&
-    typeof card.example === "string" &&
-    typeof card.known === "boolean" &&
-    typeof card.createdAt === "number"
-  );
+export function markLocalDeckMigrated() {
+  window.localStorage.setItem(MIGRATED_KEY, "1");
 }

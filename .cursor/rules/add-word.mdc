@@ -1,0 +1,28 @@
+---
+description: Upload a learned word into the local user's Flick deck
+alwaysApply: true
+---
+
+When you learn a word with the local user, upload it to their Flick deck immediately. Do not wait for them to type it in the UI.
+
+Preferred (app running on port 43147):
+
+```bash
+npm run add-word -- --word "<word>" --translation "<english>" --example "<sentence>" --known
+```
+
+Or:
+
+```bash
+curl -s -X POST http://127.0.0.1:43147/api/cards \
+  -H "Content-Type: application/json" \
+  -d '{"word":"haus","translation":"house","example":"Das Haus ist groß.","known":true}'
+```
+
+Rules:
+- `word` and `translation` are required. `example` is optional.
+- Pass `--known` / `"known": true` when the local user already learned the word.
+- The same word is upserted, not duplicated.
+- The open Flick window picks up new cards within a couple of seconds.
+- `GET /api/cards?learned=1` lists words the local user has already marked known.
+- If the app is down, `npm run add-word` still writes `data/cards.json`.

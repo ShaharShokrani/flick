@@ -5,7 +5,8 @@ A tiny flashcard app. Add a word, the English translation, and an optional examp
 - **Yes** — you know it. The card is marked known and stays out of later sessions.
 - **No** — you do not know it. It leaves this session and will not keep coming back until you start learning again.
 
-Cards are saved in your browser (`localStorage`). There is no account.
+Cards are saved on this machine in `data/cards.json`. The browser keeps a
+cache and picks up new words automatically. There is no account.
 
 ## Run locally
 
@@ -28,6 +29,26 @@ npm start
 3. Choose Yes or No. The session ends when every remaining card has been answered.
 
 The first visit includes a few sample words so you can try the flow immediately.
+
+## Add a word as an agent
+
+Once a word is learned with the local user, upload it to their deck:
+
+```bash
+npm run add-word -- --word haus --translation house --example "Das Haus ist groß." --known
+```
+
+Or:
+
+```bash
+curl -s -X POST http://127.0.0.1:43147/api/cards \
+  -H "Content-Type: application/json" \
+  -d '{"word":"haus","translation":"house","example":"Das Haus ist groß.","known":true}'
+```
+
+`word` and `translation` are required. `--known` marks the card already learned so it will not keep showing in the next session. The same word is updated instead of duplicated.
+
+`GET /api/cards?learned=1` lists words the local user has already marked known. If the app is not running, `npm run add-word` still writes `data/cards.json`.
 
 ## Codebase memory
 
