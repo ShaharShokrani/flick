@@ -38,11 +38,16 @@ Deploy the GitHub repo to Vercel (one click):
 
 Then open the `https://….vercel.app` link in Chrome on your phone → menu → **Add to Home screen**.
 
-New commits auto-deploy on `git push` to
-https://temporary-brisk-mesa-ty777ur.vercel.app/
-via `npm run deploy`. You can also run that command by hand.
-Do not commit Vercel tokens. Claim the temporary deployment on Vercel
-if you want that URL to stay up after the anonymous session expires.
+The live site is https://temporary-brisk-mesa-ty777ur.vercel.app/
+
+That project is claimed on Vercel. To publish every new commit to it,
+connect this GitHub repo in the Vercel dashboard: the project →
+**Settings → Git → Connect Repository → `ShaharShokrani/flick`**.
+
+Or add repo secrets `VERCEL_TOKEN` and `VERCEL_ORG_ID` (optional
+`VERCEL_PROJECT_ID`, default `prj_RtcpA91DNOvaP7WLfx1DO9Z4K4UV`). Then
+`git push` runs `.github/workflows/deploy.yml`, and `npm run deploy`
+works locally. Do not commit Vercel tokens.
 
 On the public site, cards stay in the phone’s browser. The `data/cards.json` API is for when you run Flick on your own computer.
 

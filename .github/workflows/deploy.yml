@@ -1,0 +1,26 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        if: ${{ env.VERCEL_TOKEN != '' }}
+        uses: actions/checkout@v4
+
+      - name: Publish to temporary-brisk-mesa-ty777ur.vercel.app
+        if: ${{ env.VERCEL_TOKEN != '' }}
+        run: npm run deploy
+
+      - name: Secrets not set
+        if: ${{ env.VERCEL_TOKEN == '' }}
+        run: |
+          echo "No VERCEL_TOKEN secret. Connect ShaharShokrani/flick to the claimed Vercel project (Settings → Git), or add VERCEL_TOKEN and VERCEL_ORG_ID as repo secrets."
