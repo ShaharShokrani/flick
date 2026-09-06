@@ -34,6 +34,9 @@ function describeError(error: AuthError, fallback: string) {
   if (error?.status === 503) {
     return "Sign-in is offline: the words database is unreachable right now.";
   }
+  if (error?.status === 403) {
+    return "Sign-in is not allowed from this web address. Open the site's main URL and try again.";
+  }
   return error?.message || fallback;
 }
 

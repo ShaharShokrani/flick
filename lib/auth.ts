@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 
+import { trustedOriginsFor } from "@/lib/auth-origins";
 import { getDb, canUseDatabase } from "@/lib/db";
 import { schema } from "@/lib/db/schema";
 import { isGuestEmail, normalizeGuestCode } from "@/lib/guest-code";
@@ -18,6 +19,8 @@ const appUrl =
 const googleEnabled = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
 );
+
+const trustedOrigins = trustedOriginsFor(appUrl);
 
 export function isAuthConfigured() {
   return Boolean(process.env.BETTER_AUTH_SECRET) && canUseDatabase();
@@ -39,12 +42,7 @@ function createAuth() {
   return betterAuth({
     baseURL: appUrl,
     secret: process.env.BETTER_AUTH_SECRET,
-    trustedOrigins: [
-      appUrl,
-      "http://127.0.0.1:43147",
-      "http://localhost:43147",
-      "https://temporary-brisk-mesa-ty777ur.vercel.app",
-    ],
+    trustedOrigins,
     database: drizzleAdapter(getDb(), {
       provider: "pg",
       schema,
