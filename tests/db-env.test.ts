@@ -19,8 +19,9 @@ test("accepts a direct connection string", () => {
 test("refuses a Prisma client-only URL", () => {
   assert.equal(resolveDatabaseUrl({ DATABASE_URL: ACCELERATE }), null);
   const problem = databaseEnvProblem({ DATABASE_URL: ACCELERATE });
-  assert.match(problem, /only Prisma's own client can open/);
-  assert.match(problem, /db\.prisma\.io:5432/);
+  assert.match(problem, /no Postgres driver can open/);
+  assert.match(problem, /Generate new connection string/);
+  assert.match(problem, /pooled\.db\.prisma\.io:5432/);
 });
 
 test("falls back to another variable when DATABASE_URL is unusable", () => {

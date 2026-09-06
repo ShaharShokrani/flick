@@ -70,10 +70,13 @@ postgres://USER:PASSWORD@HOST:5432/postgres?sslmode=require
 A `prisma+postgres://accelerate.prisma-data.net/?api_key=…` URL is
 rejected on purpose: it is an HTTP endpoint that only Prisma's own
 client can open, and a Postgres driver just times out on port 5432.
-Do not try to convert one — the direct credentials are unrelated to the
-API key. Do not reach for `@prisma/ppg` either; it requires the same
-direct string. The direct string lives in the Prisma Console under the
-database's **API Keys** section.
+Do not try to convert one — the credentials are unrelated to the API
+key. Do not reach for `@prisma/ppg` either; it needs a real connection
+string too. Prisma reveals one under **Connect to your database** ->
+**Generate new connection string**, as a pooled
+(`pooled.db.prisma.io`) and a direct (`db.prisma.io`) pair. Prefer
+pooled for anything deployed; `prepare: false` in `lib/db/index.ts` is
+what makes the app compatible with that pooler.
 `lib/db/env.ts` will fall back to `POSTGRES_URL`,
 `POSTGRES_URL_NON_POOLING`, `DATABASE_URL_UNPOOLED`, any other
 `*DATABASE*URL`-ish variable, or `PGHOST`-style parts.

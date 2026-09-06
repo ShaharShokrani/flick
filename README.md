@@ -58,10 +58,19 @@ postgres://USER:PASSWORD@HOST:5432/postgres?sslmode=require
 
 Prisma also shows a `prisma+postgres://accelerate.prisma-data.net/?api_key=…`
 URL. That one speaks HTTP to Accelerate, and only Prisma's own client can
-open it — even Prisma's lightweight `@prisma/ppg` driver needs the direct
-string. This app rejects it rather than timing out. In the Prisma Console
-open your database, go to **API Keys**, and copy the direct TCP
-connection string.
+open it — even Prisma's lightweight `@prisma/ppg` driver needs a real
+connection string. This app rejects it rather than timing out.
+
+To get a usable one in the Prisma Console: open your database, click
+**Connect to your database**, then **Generate new connection string**.
+You get two, and both work here:
+
+- `postgres://USER:PASSWORD@pooled.db.prisma.io:5432/postgres?sslmode=require`
+  — use this one. Serverless functions open a connection per request,
+  and the pooler is built for that.
+- `postgres://USER:PASSWORD@db.prisma.io:5432/postgres?sslmode=require`
+  — direct, for migrations and admin tools. Its connection limit is far
+  lower, so it is a poor fit for a deployed app.
 
 If a hosting integration owns `DATABASE_URL` and you cannot edit it, add
 the direct string under any of these names instead — the app prefers the

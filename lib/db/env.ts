@@ -86,10 +86,16 @@ export function describeDatabaseEnv(env: Env = process.env) {
   return present;
 }
 
+// Prisma shows this only after "Connect to your database" ->
+// "Generate new connection string". Pooled is the right one for
+// serverless, where every request may open its own connection.
+const HOW_TO_GET_ONE =
+  'In the Prisma Console open your database, click "Connect to your database", click "Generate new connection string", and copy the pooled string: postgres://USER:PASSWORD@pooled.db.prisma.io:5432/postgres?sslmode=require';
+
 export function databaseEnvProblem(env: Env = process.env) {
   const present = describeDatabaseEnv(env);
   if (present.length === 0 && !fromParts(env)) {
-    return "No database URL is set on this deployment. Add DATABASE_URL as postgres://USER:PASSWORD@HOST:5432/postgres?sslmode=require";
+    return `No database URL is set on this deployment. Save one as DATABASE_URL. ${HOW_TO_GET_ONE}`;
   }
 
   const clientOnly = present.filter((entry) =>
@@ -97,7 +103,7 @@ export function databaseEnvProblem(env: Env = process.env) {
   );
   if (clientOnly.length > 0) {
     const names = clientOnly.map((entry) => entry.name).join(", ");
-    return `${names} holds a ${clientOnly[0].protocol} URL, which only Prisma's own client can open. In the Prisma Console open the database, copy the string for "any Postgres client" (postgres://USER:PASSWORD@db.prisma.io:5432/postgres?sslmode=require), and save it as DATABASE_URL.`;
+    return `${names} holds a ${clientOnly[0].protocol} URL. That address is Prisma's HTTP gateway, which no Postgres driver can open — it needs a URL with a username and password in it. ${HOW_TO_GET_ONE}`;
   }
 
   const names = present.map((entry) => `${entry.name} (${entry.protocol})`);
