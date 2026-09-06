@@ -152,33 +152,37 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {mode === "guest-ready"
-              ? "Your guest code"
-              : mode === "code"
-                ? "Enter a guest code"
-                : mode === "email"
-                  ? creating
-                    ? "Create an email login"
-                    : "Sign in with email"
-                  : "Sign in"}
+            {!configured
+              ? "Sign-in is offline"
+              : mode === "guest-ready"
+                ? "Your guest code"
+                : mode === "code"
+                  ? "Enter a guest code"
+                  : mode === "email"
+                    ? creating
+                      ? "Create an email login"
+                      : "Sign in with email"
+                    : "Sign in"}
           </DialogTitle>
           <DialogDescription>
-            {mode === "guest-ready"
-              ? "Save this code. You can enter it later to open your words."
-              : mode === "code"
-                ? "Paste the guest code you already have."
-                : mode === "email"
-                  ? creating
-                    ? "Pick an email and a password."
-                    : "Enter your email and password."
-                  : "Google, email, or guest. Your words stay in the cloud."}
+            {!configured
+              ? "This site has no words database connected yet, so there is nothing to sign in to."
+              : mode === "guest-ready"
+                ? "Save this code. You can enter it later to open your words."
+                : mode === "code"
+                  ? "Paste the guest code you already have."
+                  : mode === "email"
+                    ? creating
+                      ? "Pick an email and a password."
+                      : "Enter your email and password."
+                    : "Google, email, or guest. Your words stay in the cloud."}
           </DialogDescription>
         </DialogHeader>
 
         {!configured ? (
           <p className="text-sm leading-6 text-muted-foreground">
-            Sign-in is offline right now because this site has no words
-            database connected. Your sample cards still work.
+            Keep practising with the sample cards. Saving your own words will
+            work as soon as the database is connected.
           </p>
         ) : mode === "choose" ? (
           <div className="grid gap-2">
