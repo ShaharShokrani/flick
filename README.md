@@ -47,9 +47,19 @@ postgres://USER:PASSWORD@HOST:5432/postgres?sslmode=require
 ```
 
 Prisma also shows a `prisma+postgres://accelerate.prisma-data.net/?api_key=…`
-URL. That one speaks HTTP to Accelerate and only Prisma's own client can
-open it, so this app rejects it. In the Prisma Console, open the database
-and copy the string for any Postgres client instead.
+URL. That one speaks HTTP to Accelerate, and only Prisma's own client can
+open it — even Prisma's lightweight `@prisma/ppg` driver needs the direct
+string. This app rejects it rather than timing out. In the Prisma Console
+open your database, go to **API Keys**, and copy the direct TCP
+connection string.
+
+If a hosting integration owns `DATABASE_URL` and you cannot edit it, add
+the direct string under any of these names instead — the app prefers the
+first one that a driver can actually open:
+
+`POSTGRES_URL_NON_POOLING`, `DATABASE_URL_UNPOOLED`, `POSTGRES_URL`,
+`POSTGRES_PRISMA_URL`, `NEON_DATABASE_URL`, or `PGHOST` + `PGUSER` +
+`PGPASSWORD` + `PGDATABASE`.
 
 `GET /api/health/db` reports whether a deployment can reach its database,
 which host it dialed, and how long the connection took. It never returns
