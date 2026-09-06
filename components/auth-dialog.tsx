@@ -174,7 +174,8 @@ export function AuthDialog({ open, onOpenChange, features }: AuthDialogProps) {
 
         {!configured ? (
           <p className="text-sm leading-6 text-muted-foreground">
-            Cloud sign-in is still starting up. Try again in a moment.
+            Sign-in is offline right now because this site has no words
+            database connected. Your sample cards still work.
           </p>
         ) : mode === "choose" ? (
           <div className="grid gap-2">

@@ -1,17 +1,20 @@
 ---
-description: Deploy every commit to the public Flick URL
+description: How Flick reaches its public URL
 alwaysApply: true
 ---
 
-After committing and pushing Flick changes, they must appear on
-https://temporary-brisk-mesa-ty777ur.vercel.app/
+Pushing `main` to GitHub (`ShaharShokrani/flick`) publishes
+https://temporary-brisk-mesa-ty777ur.vercel.app/ — that repo is
+connected to the Vercel project, so a push is the deploy.
 
-That Vercel project is claimed. Anonymous `vercel deploy --temporary` no
-longer works.
+Do not run the Vercel CLI from this machine. The project is claimed on
+the owner's account and the anonymous session is dead, so
+`vercel deploy` and `npm run deploy` cannot work without a
+`VERCEL_TOKEN`. `.githooks/pre-push` skips the attempt unless that token
+is set. Retrying it only burns time.
 
-- Prefer the GitHub repo `ShaharShokrani/flick` connected to that project
-  in the Vercel dashboard (Settings → Git). Then `git push` publishes it.
-- Or set `VERCEL_TOKEN` and `VERCEL_ORG_ID` and run `npm run deploy`.
-  `.githooks/pre-push` uses the same script.
-- Do not commit `.vercel/anonymous.json` or Vercel tokens.
-- Set `SKIP_DEPLOY=1` only when a push must skip the deploy attempt.
+This machine also cannot set Vercel environment variables. When
+production needs one, verify with `curl -sS <host>/api/health/db` and
+tell the owner the exact variable and value to set.
+
+Never commit `.vercel/`, Vercel tokens, or connection strings.

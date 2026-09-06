@@ -5,6 +5,8 @@ if [ "${SKIP_MEMORY}" != "1" ]; then
   node scripts/update-memory.mjs --check
 fi
 
-if [ "${SKIP_DEPLOY}" != "1" ]; then
+# Vercel publishes from the connected GitHub repo, so the CLI is only
+# worth running when someone supplies a token for it.
+if [ -n "${VERCEL_TOKEN}" ] && [ "${SKIP_DEPLOY}" != "1" ]; then
   node scripts/deploy.mjs || echo "Vercel deploy failed; push continues."
 fi
