@@ -48,18 +48,17 @@ function parse(text) {
   }
 }
 
-async function bundleText() {
+// A marker may live in the client bundles or only in a server response,
+// so search both rather than guessing which.
+async function deployedText() {
   const page = await get("/");
+  const api = await Promise.all([get("/api/health/db", 45000), get("/api/auth/features")]);
   if (page.status !== 200) {
-    return { reachable: false, text: "", status: page.status };
+    return api.map((part) => part.text).join("");
   }
   const chunks = [...new Set(page.text.match(/\/_next\/static\/[^"']+\.js/g) ?? [])];
   const parts = await Promise.all(chunks.map((chunk) => get(chunk, 20000)));
-  return {
-    reachable: true,
-    status: page.status,
-    text: page.text + parts.map((part) => part.text).join(""),
-  };
+  return page.text + parts.map((part) => part.text).join("") + api.map((part) => part.text).join("");
 }
 
 async function report() {
@@ -102,8 +101,7 @@ if (waitFor) {
   const deadline = Date.now() + timeoutSeconds * 1000;
   let found = false;
   while (Date.now() < deadline) {
-    const bundle = await bundleText();
-    if (bundle.text.includes(waitFor)) {
+    if ((await deployedText()).includes(waitFor)) {
       found = true;
       break;
     }
