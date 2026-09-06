@@ -1,11 +1,12 @@
 ---
-description: Keep long-term git codebase memory accurate
+description: Start from the codebase memory and keep it accurate
 alwaysApply: true
 ---
 
-Flick keeps a long-term memory of this git codebase in `.cursor/memory/`.
+Read `.cursor/memory/intent.md` (product rules) and
+`.cursor/memory/codebase.md` (generated map of routes, files, exports)
+before searching the tree. `AGENTS.md` has commands and known dead ends.
 
-- Read `.cursor/memory/codebase.md` before changing architecture, routes, storage, or learning behavior.
-- Durable product facts live in `.cursor/memory/intent.md`. Update that file when Yes/No rules, persistence, or routes change.
-- After changing `app/`, `components/`, `lib/`, `scripts/`, or intent, run `npm run memory:update` and commit the generated `.cursor/memory/codebase.md` in the same change.
-- Do not hand-edit the generated snapshot. The pre-commit hook regenerates and stages it; do not skip the hook unless `SKIP_MEMORY=1` is required.
+Update `intent.md` when behavior changes. Never hand-edit
+`codebase.md` — `npm run memory:update` regenerates it and the
+pre-commit hook stages it. `npm run verify` fails on a stale snapshot.

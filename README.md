@@ -22,6 +22,16 @@ npm run build
 npm start
 ```
 
+Signing in locally needs a database. `npm run db:temp` provisions a
+throwaway Postgres and writes it into `.env.local`; it prints a link to
+claim it if you want to keep it. Then check everything works:
+
+```bash
+npm run smoke                       # sign-in and deck flow, locally
+npm run site -- https://your.app    # a deployment's database and session
+npm run verify                      # types, lint, tests, memory
+```
+
 ## How it works
 
 1. Open **Words** to add or edit cards. Each word shows a % of how well you know it.

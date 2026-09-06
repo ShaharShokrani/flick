@@ -1,0 +1,4 @@
+# Keep the lockfile and generated memory out of diffs. Reading either one
+# costs far more than it explains.
+package-lock.json -diff linguist-generated
+.cursor/memory/codebase.md -diff linguist-generated

@@ -30,14 +30,19 @@ those two files instead of searching the tree.
 ```bash
 npm run dev       # port 43147, hostname 0.0.0.0
 npm run verify    # types + lint + tests + memory freshness, in one call
-npm run test      # node:test, dot reporter
-npm run health    # is the local server's database reachable?
+npm run smoke     # real sign-in and deck flow against the local server
+npm run site -- <url>   # a deployment's database, features, and session
+npm run db:temp   # fresh throwaway Postgres into .env.local
 npm run add-word -- --word haus --translation house --known
 ```
 
-Prefer `npm run verify` over separate `tsc`, `eslint`, and test calls.
-It fails fast and prints almost nothing when it passes. `npm run build`
-is slow and rarely tells you anything `verify` did not.
+Use these instead of writing one-off probes. `npm run verify` replaces
+separate `tsc`, `eslint`, and test calls and prints almost nothing when
+it passes. `npm run smoke` proves sign-in and card writes really work,
+which no amount of reading can. `npm run site` accepts
+`--wait-for "<text>"` to poll until a push is actually deployed, so you
+never hand-roll a curl loop. `npm run build` is slow and rarely says
+anything `verify` did not.
 
 ## Where things live
 
@@ -95,6 +100,25 @@ hook both fail on this by design and the push continues. Do not retry
 the CLI or try to work around it — if production needs an env var, say
 so in your reply.
 
+## Dead ends, already tried
+
+Do not spend calls re-testing these.
+
+- An Accelerate URL cannot be converted to a direct one. The direct
+  credentials are a 64-char identifier and a separate key, unrelated to
+  the API key in `prisma+postgres://…?api_key=`.
+- `@prisma/ppg`, despite being Prisma's own serverless client, also
+  requires the direct TCP string. Only the full Prisma ORM client can
+  use an Accelerate URL, which would mean codegen at build time.
+- `create-db` only ever prints a direct connection string, so there is
+  no way to get an Accelerate key here to test against.
+- The Vercel CLI cannot deploy and cannot read or write environment
+  variables from this machine.
+- Better Auth rejects any origin outside `trustedOrigins` with
+  `403 INVALID_ORIGIN`. Deployment hostnames come from
+  `lib/auth-origins.ts`; a wildcard scoped to the project name works,
+  a bare `https://*.vercel.app` is too wide.
+
 ## Secrets
 
 `.env.local` is local-only and gitignored. Never commit it, never print
@@ -113,7 +137,9 @@ into a file that gets committed. `.env.example` documents names only.
   that produces it.
 - Read a whole small file once rather than several overlapping slices of
   a big one.
-- Do not re-probe production repeatedly while waiting for a deploy; poll
-  once with a pattern or wait, then check.
+- Do not re-probe production repeatedly while waiting for a deploy. Use
+  `npm run site -- <url> --wait-for "<text>"` once.
+- The lockfile and the generated memory snapshot are marked `-diff` in
+  `.gitattributes`, so `git diff` stays readable. Leave that alone.
 - Keep `.cursor/memory/intent.md` short. It is loaded often, so put
   durable rules there and leave incident detail in commit messages.
