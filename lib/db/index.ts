@@ -1,6 +1,7 @@
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 
+import { databaseEnvProblem, resolveDatabaseUrl } from "@/lib/db/env";
 import { schema } from "@/lib/db/schema";
 import { SCHEMA_SQL } from "@/lib/db/sql";
 
@@ -15,31 +16,8 @@ export class DatabaseUnavailableError extends Error {
   }
 }
 
-// Prisma's `prisma+postgres://` URL speaks HTTP to Accelerate, so a
-// Postgres driver just times out dialing port 5432 against it.
-const CLIENT_ONLY_SCHEMES = new Set(["prisma:", "prisma+postgres:"]);
-
-export function connectionStringProblem(raw: string | undefined) {
-  if (!raw) {
-    return "DATABASE_URL is not set on this deployment.";
-  }
-  let url: URL;
-  try {
-    url = new URL(raw);
-  } catch {
-    return "DATABASE_URL is not a valid connection string.";
-  }
-  if (CLIENT_ONLY_SCHEMES.has(url.protocol)) {
-    return `DATABASE_URL is a ${url.protocol.slice(0, -1)} URL, which only Prisma's own client can open. Copy the direct connection string instead: postgres://USER:PASSWORD@db.prisma.io:5432/postgres?sslmode=require`;
-  }
-  if (!url.protocol.startsWith("postgres")) {
-    return `DATABASE_URL must be a postgres:// connection string, not ${url.protocol.slice(0, -1)}.`;
-  }
-  return null;
-}
-
 export function hasRemoteDatabase() {
-  return Boolean(process.env.DATABASE_URL);
+  return Boolean(resolveDatabaseUrl());
 }
 
 export function canUseDatabase() {
@@ -59,13 +37,13 @@ export function getDb() {
 }
 
 export async function ensureDb() {
-  const problem = connectionStringProblem(process.env.DATABASE_URL);
-  if (problem) {
-    throw new DatabaseUnavailableError(problem);
+  const resolved = resolveDatabaseUrl();
+  if (!resolved) {
+    throw new DatabaseUnavailableError(databaseEnvProblem());
   }
 
   if (!sql) {
-    sql = postgres(process.env.DATABASE_URL!, {
+    sql = postgres(resolved.url, {
       max: 1,
       ssl: "require",
       prepare: false,

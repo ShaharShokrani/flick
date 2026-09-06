@@ -1,7 +1,11 @@
 import postgres from "postgres";
 
 import { json } from "@/lib/api";
-import { connectionStringProblem } from "@/lib/db";
+import {
+  databaseEnvProblem,
+  describeDatabaseEnv,
+  resolveDatabaseUrl,
+} from "@/lib/db/env";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -30,21 +34,19 @@ function describeTarget(raw: string) {
 }
 
 export async function GET() {
-  const url = process.env.DATABASE_URL;
-  const problem = connectionStringProblem(url);
-  if (problem || !url) {
-    return json(
-      { ok: false, target: url ? describeTarget(url) : null, error: problem },
-      503
-    );
+  const seen = describeDatabaseEnv();
+  const resolved = resolveDatabaseUrl();
+
+  if (!resolved) {
+    return json({ ok: false, seen, error: databaseEnvProblem() }, 503);
   }
 
-  const target = describeTarget(url);
+  const target = describeTarget(resolved.url);
   const startedAt = Date.now();
   let sql: ReturnType<typeof postgres> | null = null;
 
   try {
-    sql = postgres(url, {
+    sql = postgres(resolved.url, {
       max: 1,
       ssl: "require",
       prepare: false,
@@ -52,13 +54,21 @@ export async function GET() {
       idle_timeout: 5,
     });
     const rows = await sql`select 1 as ok`;
-    return json({ ok: rows[0]?.ok === 1, target, ms: Date.now() - startedAt });
+    return json({
+      ok: rows[0]?.ok === 1,
+      source: resolved.source,
+      target,
+      seen,
+      ms: Date.now() - startedAt,
+    });
   } catch (error) {
     const failure = error as Failure;
     return json(
       {
         ok: false,
+        source: resolved.source,
         target,
+        seen,
         ms: Date.now() - startedAt,
         error: failure.message ?? "Could not reach the database.",
         code: failure.code ?? failure.errno ?? null,
